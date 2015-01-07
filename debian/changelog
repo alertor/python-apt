@@ -1,3 +1,9 @@
+python-apt (0.9.3.5ubuntu1) trusty-proposed; urgency=medium
+
+  * Rebuild to get updated mirror files. (LP: #1397578)
+
+ -- Brian Murray <brian@ubuntu.com>  Tue, 06 Jan 2015 16:47:11 -0800
+
 python-apt (0.9.3.5) unstable; urgency=medium
 
   * utils/get_ubuntu_mirrors.py: Drop, its unused and broken
