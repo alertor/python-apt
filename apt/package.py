@@ -904,7 +904,7 @@ class Package(object):
         Return a list of unicode names of the files which have
         been installed by this package
         """
-        for name in self.shortname, self.fullname:
+        for name in self.name, self.fullname:
             path = "/var/lib/dpkg/info/%s.list" % name
             try:
                 with open(path, "rb") as file_list:
