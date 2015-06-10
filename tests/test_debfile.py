@@ -71,14 +71,14 @@ class TestDebfile(unittest.TestCase):
         self.assertEqual(set(deb.missing_deps), missing)
         # specialized properties
         self.assertEqual(deb.pkgname, "hello")
-        self.assertEqual(deb.binaries, ["hello"])
+        self.assertEqual(deb.binaries, ["hello", "bello", "cello"])
         self.assertEqual(deb.filelist, ["hello_2.5.orig.tar.gz",
                                         "hello_2.5-1.diff.gz"])
         self.assertEqual(deb.depends, [[("autotools-dev", "", "")]])
         # tag fields are available as a dict
         self.assertEqual(deb["Format"], "1.0")
         self.assertEqual(deb["Source"], "hello")
-        self.assertEqual(deb["Binary"], "hello")
+        self.assertEqual(deb["Binary"], "hello, bello,\n cello")
         self.assertEqual(deb["Architecture"], "any")
         self.assertEqual(deb["Version"], "2.5-1")
         self.assertEqual(

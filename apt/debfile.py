@@ -734,7 +734,8 @@ class DscSrcPackage(DebPackage):
                 if 'Source' in sec:
                     self.pkgname = sec['Source']
                 if 'Binary' in sec:
-                    self.binaries = sec['Binary'].split(', ')
+                    self.binaries = [b.strip() for b in
+                                     sec['Binary'].split(',')]
                 for tag in sec.keys():
                     if tag in sec:
                         self._sections[tag] = sec[tag]

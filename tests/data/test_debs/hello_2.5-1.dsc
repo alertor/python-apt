@@ -3,7 +3,8 @@ Hash: SHA256
 
 Format: 1.0
 Source: hello
-Binary: hello
+Binary: hello, bello,
+ cello
 Architecture: any
 Version: 2.5-1
 Maintainer: Santiago Vila <sanvila@debian.org>
