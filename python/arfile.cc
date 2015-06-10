@@ -179,10 +179,22 @@ static PyObject *ararchive_extractdata(PyArArchiveObject *self, PyObject *args)
         PyErr_Format(PyExc_LookupError,"No member named '%s'",name.path);
         return 0;
     }
+    if (member->Size > SIZE_MAX) {
+        PyErr_Format(PyExc_MemoryError,
+                     "Member '%s' is too large to read into memory",name.path);
+        return 0;
+    }
     if (!self->Fd.Seek(member->Start))
         return HandleErrors();
 
-    char* value = new char[member->Size];
+    char* value;
+    try {
+        value = new char[member->Size];
+    } catch (std::bad_alloc&) {
+        PyErr_Format(PyExc_MemoryError,
+                     "Member '%s' is too large to read into memory",name.path);
+        return 0;
+    }
     self->Fd.Read(value, member->Size, true);
     PyObject *result = PyBytes_FromStringAndSize(value, member->Size);
     delete[] value;
