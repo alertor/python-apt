@@ -78,8 +78,8 @@ class Cache(object):
         self._changes_count = -1
         self._sorted_set = None
 
-        self.connect("cache_post_open", self._inc_changes_count)
-        self.connect("cache_post_change", self._inc_changes_count)
+        self.connect("cache_post_open", "_inc_changes_count")
+        self.connect("cache_post_change", "_inc_changes_count")
         if memonly:
             # force apt to build its caches in memory
             apt_pkg.config.set("Dir::Cache::pkgcache", "")
@@ -135,7 +135,10 @@ class Cache(object):
         """ internal helper to run a callback """
         if name in self._callbacks:
             for callback in self._callbacks[name]:
-                callback()
+                if callback == '_inc_changes_count':
+                    self._inc_changes_count()
+                else:
+                    callback()
 
     def open(self, progress=None):
         """ Open the package cache, after that it can be used like
