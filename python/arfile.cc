@@ -221,14 +221,14 @@ static PyObject *_extract(FileFd &Fd, const ARArchive::Member *member,
     // Read 4 KiB from the file, until all of the file is read. Deallocated
     // automatically when the function returns.
     SPtrArray<char> value = new char[4096];
-    unsigned long size = member->Size;
-    unsigned long read = 4096;
+    unsigned long long size = member->Size;
+    unsigned long long read = 4096;
     while (size > 0) {
         if (size < read)
             read = size;
         if (!Fd.Read(value, read, true))
             return HandleErrors();
-        if (write(outfd, value, read) != (signed)read)
+        if (write(outfd, value, read) != (signed long long)read)
             return PyErr_SetFromErrnoWithFilename(PyExc_OSError, outfile);
         size -= read;
     }
