@@ -43,7 +43,8 @@ public:
     PyObject *py_data;
     // The requested member or NULL.
     const char *member;
-    // Set to true if an error occured in the Python callback.
+    // Set to true if an error occured in the Python callback, or a file
+    // was too large to read in extractdata.
     bool error;
     // Place where the copy of the data is stored.
     char *copy;
@@ -76,14 +77,31 @@ bool PyDirStream::DoItem(Item &Itm, int &Fd)
 {
     if (!member || strcmp(Itm.Name, member) == 0) {
         // Allocate a new buffer if the old one is too small.
+        if (Itm.Size > SIZE_MAX)
+            goto to_large;
         if (copy == NULL || copy_size < Itm.Size) {
             delete[] copy;
-            copy = new char[Itm.Size];
+            copy = new (std::nothrow) char[Itm.Size];
+            if (copy == NULL)
+                goto to_large;
             copy_size = Itm.Size;
         }
         Fd = -2;
     } else {
         Fd = -1;
+    }
+    return true;
+to_large:
+    delete[] copy;
+    copy = NULL;
+    copy_size = 0;
+    /* If we are looking for a specific member, abort reading now */
+    if (member) {
+        error = true;
+        PyErr_Format(PyExc_MemoryError,
+                     "The member %s was too large to read into memory",
+                     Itm.Name);
+        return false;
     }
     return true;
 }
@@ -96,7 +114,8 @@ bool PyDirStream::Process(Item &Itm,const unsigned char *Data,
                           unsigned long Size,unsigned long Pos)
 #endif
 {
-    memcpy(copy + Pos, Data,Size);
+    if (copy != NULL)
+        memcpy(copy + Pos, Data,Size);
     return true;
 }
 
@@ -107,7 +126,12 @@ bool PyDirStream::FinishedFile(Item &Itm,int Fd)
         return true;
 
     Py_XDECREF(py_data);
-    py_data = PyBytes_FromStringAndSize(copy, Itm.Size);
+    if (copy == NULL) {
+        Py_INCREF(Py_None);
+        py_data = Py_None;
+    } else {
+        py_data = PyBytes_FromStringAndSize(copy, Itm.Size);
+    }
 
     if (!callback)
         return true;
@@ -424,12 +448,12 @@ static PyObject *tarfile_extractdata(PyObject *self, PyObject *args)
     // Go through the stream.
     GetCpp<ExtractTar*>(self)->Go(stream);
 
+    if (stream.error)
+        return 0;
+
     if (!stream.py_data)
         return PyErr_Format(PyExc_LookupError, "There is no member named '%s'",
                             member.path);
-    if (stream.error) {
-        return 0;
-    }
     return Py_INCREF(stream.py_data), stream.py_data;
 }
 
