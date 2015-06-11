@@ -5,7 +5,8 @@ import unittest
 
 import apt_inst
 
-IS_NOT_32BIT = sys.maxsize > 2**32
+IS_NOT_32BIT = sys.maxsize > 2 ** 32
+
 
 @unittest.skipIf(IS_NOT_32BIT, "Large File support is for 32 bit systems")
 class testHashes(unittest.TestCase):
