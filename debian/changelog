@@ -1,3 +1,21 @@
+python-apt (0.9.3.12) jessie; urgency=medium
+
+  [ Julian Andres Klode ]
+  * apt/cache.py: Work around a cyclic reference from Cache to its methods
+    (Closes: #745487)
+  * python/arfile.cc: LFS: Use long long instead of long for file sizes
+  * python/arfile.cc: Do not allow files larger than SIZE_MAX to be mapped
+  * python/tarfile.cc: LFS: Handle too large file
+  * apt.debfile: Fix splitting of multi-lines Binary fields in dsc files
+    (Closes: #751770)
+  * apt/debfile.py: Arch-qualify in compare_to_version_in_cache()
+    (Closes: #750189)
+
+  [ Michael Vogt ]
+  * Fix apt.Package.installed_files for multi-arch packages (LP: #1313699)
+
+ -- Julian Andres Klode <jak@debian.org>  Tue, 16 Jun 2015 11:35:11 +0200
+
 python-apt (0.9.3.11) unstable; urgency=low
 
   [ Colin Watson ]
