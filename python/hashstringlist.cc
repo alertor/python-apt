@@ -125,7 +125,7 @@ static PyObject *hashstringlist_getitem(PyObject *iSelf, Py_ssize_t index)
 {
     HashStringList &self = GetCpp<HashStringList>(iSelf);
 
-    if (index >= self.size())
+    if (index < 0 || (size_t) index >= self.size())
         return PyErr_Format(PyExc_IndexError, "Out of range: %zd", index);
 
     /* Copy over, safer than using a reference to the vector element */
