@@ -114,5 +114,73 @@ class TestHashString(unittest.TestCase):
             self.assertRaises(TypeError, apt_pkg.HashString, bytes())
 
 
+class TestHashStringList(unittest.TestCase):
+    """Test apt_pkg.HashStringList()"""
+
+    def test_file_size(self):
+        hsl = apt_pkg.HashStringList()
+        self.assertEqual(hsl.file_size, 0)
+        hsl.file_size = 42
+        self.assertEqual(hsl.file_size, 42)
+        self.assertEqual(len(hsl), 1)
+
+        # Verify that I can re-assign value (this handles the long case on
+        # Python 2).
+        hsl.file_size = hsl.file_size
+
+        with self.assertRaises(OverflowError):
+            hsl.file_size = -1
+
+        hsl.file_size = 0
+
+    def test_append(self):
+        """Testing whether append works correctly."""
+        hs1 = apt_pkg.HashString("MD5Sum",
+                                 "a60599e6200b60050d7a30721e3532ed")
+        hs2 = apt_pkg.HashString("SHA1",
+                                 "ef113338e654b1ada807a939ad47b3a67633391b")
+
+        hsl = apt_pkg.HashStringList()
+        hsl.append(hs1)
+        hsl.append(hs2)
+        self.assertEqual(len(hsl), 2)
+        self.assertEqual(hsl[0].hashtype, "MD5Sum")
+        self.assertEqual(hsl[1].hashtype, "SHA1")
+        self.assertEqual(str(hsl[0]), str(hs1))
+        self.assertEqual(str(hsl[1]), str(hs2))
+
+    def test_find(self):
+        """Testing whether append works correctly."""
+        hs1 = apt_pkg.HashString("MD5Sum",
+                                 "a60599e6200b60050d7a30721e3532ed")
+        hs2 = apt_pkg.HashString("SHA1",
+                                 "ef113338e654b1ada807a939ad47b3a67633391b")
+
+        hsl = apt_pkg.HashStringList()
+        hsl.append(hs1)
+        hsl.append(hs2)
+
+        self.assertEqual(hsl.find("MD5Sum").hashtype, "MD5Sum")
+        self.assertEqual(hsl.find("SHA1").hashtype, "SHA1")
+        self.assertEqual(hsl.find().hashtype, "SHA1")
+
+    def test_verify_file(self):
+        with open(apt_pkg.__file__) as fobj:
+            hashes = apt_pkg.Hashes(fobj)
+            sha1 = apt_pkg.HashString("SHA1", hashes.sha1)
+            sha256 = apt_pkg.HashString("SHA256", hashes.sha256)
+
+        hsl = apt_pkg.HashStringList()
+        hsl.append(sha1)
+        hsl.append(sha256)
+
+        self.assertTrue(hsl.verify_file(apt_pkg.__file__))
+
+        md5sum = apt_pkg.HashString("MD5Sum",
+                                    "a60599e6200b60050d7a30721e3532ed")
+        hsl.append(md5sum)
+
+        self.assertFalse(hsl.verify_file(apt_pkg.__file__))
+
 if __name__ == "__main__":
     unittest.main()

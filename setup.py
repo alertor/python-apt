@@ -49,7 +49,7 @@ files = ['apt_pkgmodule.cc', 'acquire.cc', 'cache.cc', 'cdrom.cc',
          'pkgmanager.cc', 'pkgrecords.cc', 'pkgsrcrecords.cc', 'policy.cc',
          'progress.cc', 'sourcelist.cc', 'string.cc', 'tag.cc',
          'lock.cc', 'acquire-item.cc', 'python-apt-helpers.cc',
-         'cachegroup.cc', 'orderlist.cc']
+         'cachegroup.cc', 'orderlist.cc', 'hashstringlist.cc']
 files = sorted(['python/' + fname for fname in files], key=lambda s: s[:-3])
 apt_pkg = Extension("apt_pkg", files, libraries=["apt-pkg"],
                     extra_compile_args=['-std=c++11', '-Wno-write-strings',

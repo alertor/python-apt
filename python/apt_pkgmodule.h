@@ -126,6 +126,8 @@ extern PyTypeObject PyMetaIndex_Type;
 // HashString
 extern PyTypeObject PyHashString_Type;
 
+extern PyTypeObject PyHashStringList_Type;
+
 
 // Policy
 extern PyTypeObject PyPolicy_Type;

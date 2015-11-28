@@ -1873,6 +1873,17 @@ generic hash support:
         Verify that the file given by the parameter *filename* matches the
         hash stored in this object.
 
+.. autoclass:: HashStringList
+    :members:
+
+    .. describe:: len(list)
+
+        Return the length of the list
+
+    .. describe:: list[index]
+
+        Get the :class:`HashString` object at the specified index.
+
 The :mod:`apt_pkg` module also provides the functions :func:`md5sum`,
 :func:`sha1sum` and :func:`sha256sum` for creating a single hash from a
 :class:`bytes` or :class:`file` object:

@@ -928,6 +928,7 @@ extern "C" void initapt_pkg()
    ADDTYPE(Module,"SystemLock",&PySystemLock_Type);
    ADDTYPE(Module,"FileLock",&PyFileLock_Type);
    ADDTYPE(Module,"OrderList",&PyOrderList_Type);
+   ADDTYPE(Module,"HashStringList",&PyHashStringList_Type);
    // Tag file constants
    PyModule_AddObject(Module,"REWRITE_PACKAGE_ORDER",
                       CharCharToList(TFRewritePackageOrder));
