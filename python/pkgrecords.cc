@@ -70,6 +70,17 @@ static PyObject *PkgRecordsGetFileName(PyObject *Self,void*) {
    PkgRecordsStruct &Struct = GetStruct(Self,"FileName");
    return (Struct.Last != 0) ? CppPyString(Struct.Last->FileName()) : 0;
 }
+static PyObject *PkgRecordsGetHashes(PyObject *Self,void*) {
+APT_IGNORE_DEPRECATED_PUSH
+   PkgRecordsStruct &Struct = GetStruct(Self,"Hashes");
+   if (Struct.Last == 0)
+      return 0;
+
+   auto py = CppPyObject_NEW<HashStringList> (nullptr, &PyHashStringList_Type);
+   py->Object = Struct.Last->Hashes();
+   return py;
+APT_IGNORE_DEPRECATED_POP
+}
 static PyObject *PkgRecordsGetMD5Hash(PyObject *Self,void*) {
    PkgRecordsStruct &Struct = GetStruct(Self,"MD5Hash");
    return (Struct.Last != 0) ? CppPyString(Struct.Last->MD5Hash()) : 0;
@@ -126,6 +137,8 @@ static PyGetSetDef PkgRecordsGetSet[] = {
    {"long_desc",PkgRecordsGetLongDesc,0,
     "The long description of the packages; i.e. all lines in the\n"
     "'Description' field except for the first one."},
+   {"hashes",PkgRecordsGetHashes,0,
+    "The hashes of the packages, as a HashStringList"},
    {"md5_hash",PkgRecordsGetMD5Hash,0,
     "The MD5 hash value of the package, as stored in the 'MD5Sum' field."},
    {"maintainer",PkgRecordsGetMaintainer,0,

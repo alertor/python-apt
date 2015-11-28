@@ -1366,6 +1366,12 @@ Records (Release files, Packages, Sources)
         Return the field 'Filename' of the record. This is the path to the
         package, relative to the base path of the archive.
 
+    .. attribute:: hashes
+
+        A :class:`apt_pkg.HashStringList` of all hashes.
+
+        .. versionadded:: 1.1
+
     .. attribute:: md5_hash
 
         Return the MD5 hashsum of the package This refers to the field
