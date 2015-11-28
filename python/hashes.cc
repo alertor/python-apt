@@ -62,6 +62,14 @@ static int hashes_init(PyObject *self, PyObject *args, PyObject *kwds)
     return 0;
 }
 
+static PyObject *hashes_get_hashes(PyObject *self, void*)
+{
+    auto py = CppPyObject_NEW<HashStringList>(nullptr, &PyHashStringList_Type);
+
+    py->Object = GetCpp<Hashes>(self).GetHashStringList();
+    return py;
+}
+
 static PyObject *hashes_get_md5(PyObject *self, void*)
 {
     return CppPyString(GetCpp<Hashes>(self).MD5.Result().Value());
@@ -78,9 +86,18 @@ static PyObject *hashes_get_sha256(PyObject *self, void*)
 }
 
 static PyGetSetDef hashes_getset[] = {
-    {"md5",hashes_get_md5,0,"The MD5Sum of the file as a string."},
-    {"sha1",hashes_get_sha1,0,"The SHA1Sum of the file as a string."},
-    {"sha256",hashes_get_sha256,0,"The SHA256Sum of the file as a string."},
+    {"hashes",hashes_get_hashes,0,
+     "A :class:`HashStringList` of all hashes.\n\n"
+     ".. versionadded:: 1.1"},
+    {"md5",hashes_get_md5,0,
+     "The MD5Sum of the file as a string.\n\n"
+     ".. deprecated:: 1.1"},
+    {"sha1",hashes_get_sha1,0,
+     "The SHA1Sum of the file as a string.\n\n"
+     ".. deprecated:: 1.1"},
+    {"sha256",hashes_get_sha256,0,
+     "The SHA256Sum of the file as a string.\n\n"
+     ".. deprecated:: 1.1"},
     {}
 };
 

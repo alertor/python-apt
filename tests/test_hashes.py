@@ -182,5 +182,10 @@ class TestHashStringList(unittest.TestCase):
 
         self.assertFalse(hsl.verify_file(apt_pkg.__file__))
 
+        hsl2 = hashes.hashes
+        self.assertIsInstance(hsl2, apt_pkg.HashStringList)
+        self.assertGreater(len(hsl2), 0)
+        self.assertTrue(hsl2.verify_file(apt_pkg.__file__))
+
 if __name__ == "__main__":
     unittest.main()
