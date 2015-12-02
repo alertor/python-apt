@@ -28,6 +28,29 @@ if libdir:
 import apt_pkg
 
 
+class TestOpenMaybeClearSigned(unittest.TestCase):
+
+    def test_open_trivial(self):
+        basepath = os.path.dirname(__file__)
+        fd = apt_pkg.open_maybe_clear_signed_file(
+            os.path.join(basepath, "./data/test_debs/hello_2.5-1.dsc"))
+        with os.fdopen(fd) as f:
+            data = f.read()
+        self.assertTrue(data.startswith("Format: 1.0\n"))
+
+    def test_open_normal(self):
+        basepath = os.path.dirname(__file__)
+        fd = apt_pkg.open_maybe_clear_signed_file(
+            os.path.join(basepath, "./data/misc/foo_Release"))
+        with os.fdopen(fd) as f:
+            data = f.read()
+        self.assertTrue(data.startswith("Origin: Ubuntu\n"))
+
+    def xtest_open_does_not_exit(self):
+        with self.assertRaises(SystemError):
+            apt_pkg.open_maybe_clear_signed_file("does-not-exists")
+
+
 class TestTagFile(unittest.TestCase):
     """ test the apt_pkg.TagFile """
 

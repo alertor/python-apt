@@ -212,7 +212,10 @@ class TestAuthKeys(unittest.TestCase):
                     "0101010178F7FE5C3E65D8AF8B48AD6246925553",
                     "hkp://localhost:%d" % self.keyserver_port)
         self.assertTrue(
-            str(cm.exception).startswith("Fingerprints do not match"),
+            str(cm.exception).startswith(
+                "recv from 'hkp://localhost:%d' failed for '%s'" % (
+                    self.keyserver_port,
+                    "0101010178F7FE5C3E65D8AF8B48AD6246925553")),
             cm.exception)
 
     def testAddKeyFromServer(self):

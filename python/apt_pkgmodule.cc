@@ -27,6 +27,7 @@
 #include <apt-pkg/orderlist.h>
 #include <apt-pkg/aptconfiguration.h>
 #include <apt-pkg/fileutl.h>
+#include <apt-pkg/gpgv.h>
 
 #include <sys/stat.h>
 #include <libintl.h>
@@ -426,6 +427,25 @@ static PyObject *InitSystem(PyObject *Self,PyObject *Args)
    return HandleErrors(Py_None);
 }
 									/*}}}*/
+// gpgv.cc:OpenMaybeClearSignedFile                    /*{{{*/
+// ---------------------------------------------------------------------
+static char *doc_OpenMaybeClearSignedFile =
+"open_maybe_clear_signed_file(file: str) -> int\n\n"
+"Open a file and ignore a PGP clear signature.\n"
+"Return a open file descriptor or a error.";
+static PyObject *PyOpenMaybeClearSignedFile(PyObject *Self,PyObject *Args)
+{
+   PyApt_Filename file;
+   char errors = false;
+   if (PyArg_ParseTuple(Args,"O&",PyApt_Filename::Converter, &file,&errors) == 0)
+      return 0;
+
+   FileFd Fd;
+   if (OpenMaybeClearSignedFile(file, Fd) == false)
+      return HandleErrors(MkPyNumber(-1));
+
+   return HandleErrors(MkPyNumber(dup(Fd.Fd())));
+}
 
 // fileutils.cc: GetLock						/*{{{*/
 // ---------------------------------------------------------------------
@@ -499,6 +519,9 @@ static PyMethodDef methods[] =
 
    // Tag File
    {"rewrite_section",RewriteSection,METH_VARARGS,doc_RewriteSection},
+
+   {"open_maybe_clear_signed_file",PyOpenMaybeClearSignedFile,METH_VARARGS,
+    doc_OpenMaybeClearSignedFile},
 
    // Locking
    {"get_lock",GetLock,METH_VARARGS,doc_GetLock},

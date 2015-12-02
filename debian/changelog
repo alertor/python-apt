@@ -1,3 +1,13 @@
+python-apt (0.9.3.5ubuntu2) trusty-proposed; urgency=medium
+
+  * Do not only look at Release files, but look at InRelease files as well.
+    Change the code to open Release and InRelease files with
+    apt_pkg.open_maybe_clear_signed_file() which will ignore the signature if
+    it exists. (LP: #1503979)
+  * tests/test_auth.py: update for gnupg 1.4.18 (Closes: #755342)
+
+ -- Brian Murray <brian@ubuntu.com>  Wed, 02 Dec 2015 10:51:58 -0800
+
 python-apt (0.9.3.5ubuntu1) trusty-proposed; urgency=medium
 
   * Rebuild to get updated mirror files. (LP: #1397578)
