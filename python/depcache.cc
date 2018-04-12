@@ -238,6 +238,12 @@ static PyObject *PkgDepCacheSetCandidateVer(PyObject *Self,PyObject *Args)
       return HandleErrors(PyBool_FromLong(false));
    }
    VALIDATE_ITERATOR(I);
+
+   if (I.ParentPkg() != Pkg) {
+      PyErr_SetString(PyExc_ValueError, "Version does not belong to package");
+      return NULL;
+   }
+
    depcache->SetCandidateVersion(I);
 
    return HandleErrors(PyBool_FromLong(true));
