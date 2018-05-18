@@ -97,7 +97,7 @@ class Cache(object):
         self._list = None  # type: apt_pkg.SourceList
         self._callbacks = {}  # type: Dict[str, List[Callable[..., None]]]
         self._callbacks2 = {}  # type: Dict[str, List[Tuple[Callable[..., None], List[Any], Dict[Any,Any]]]] # nopep8
-        self._weakref = weakref.WeakValueDictionary()  # type: ignore
+        self._weakref = weakref.WeakValueDictionary()  # type: weakref.WeakValueDictionary[str, apt.Package] # nopep8
         self._changes_count = -1
         self._sorted_set = None  # type: List[str]
 
@@ -214,10 +214,10 @@ class Cache(object):
     def __getitem__(self, key):
         # type: (object) -> Package
         """ look like a dictionary (get key) """
+        key = str(key)
         try:
             return self._weakref[key]
         except KeyError:
-            key = str(key)
             try:
                 rawpkg = self._cache[key]
             except KeyError:
