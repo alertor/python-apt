@@ -28,7 +28,7 @@ import weakref
 
 try:
     from typing import (Any, Callable, Dict, Iterator, List, Optional,
-                        Set, Tuple)
+                        Set, Tuple, cast)
     Any  # pyflakes
     Callable  # pyflakes
     Dict  # pyflakes
@@ -38,6 +38,8 @@ try:
     Set  # pyflakes
     Tuple  # pyflakes
 except ImportError:
+    def cast(typ, obj):  # type: ignore
+        return obj
     pass
 
 import apt_pkg
@@ -93,10 +95,10 @@ class Cache(object):
 
     def __init__(self, progress=None, rootdir=None, memonly=False):
         # type: (OpProgress, str, bool) -> None
-        self._cache = None  # type: apt_pkg.Cache
-        self._depcache = None  # type: apt_pkg.DepCache
-        self._records = None  # type: apt_pkg.PackageRecords
-        self._list = None  # type: apt_pkg.SourceList
+        self._cache = cast(apt_pkg.Cache, None)  # type: apt_pkg.Cache
+        self._depcache = cast(apt_pkg.DepCache, None)  # type: apt_pkg.DepCache
+        self._records = cast(apt_pkg.PackageRecords, None)  # type: apt_pkg.PackageRecords # nopep8
+        self._list = cast(apt_pkg.SourceList, None)  # type: apt_pkg.SourceList
         self._callbacks = {}  # type: Dict[str, List[Callable[..., None]]]
         self._callbacks2 = {}  # type: Dict[str, List[Tuple[Callable[..., None], List[Any], Dict[Any,Any]]]] # nopep8
         self._weakref = weakref.WeakValueDictionary()  # type: weakref.WeakValueDictionary[str, apt.Package] # nopep8
@@ -202,7 +204,7 @@ class Cache(object):
         """ Close the package cache """
         # explicitely free the FDs that _records has open
         del self._records
-        self._records = None
+        self._records = cast(apt_pkg.PackageRecords, None)
 
     def __enter__(self):
         # type: () -> Cache
