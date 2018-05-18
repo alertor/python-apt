@@ -27,12 +27,14 @@ import warnings
 import weakref
 
 try:
-    from typing import Any, Callable, Dict, Iterator, List, Set, Tuple
+    from typing import (Any, Callable, Dict, Iterator, List, Optional,
+                        Set, Tuple)
     Any  # pyflakes
     Callable  # pyflakes
     Dict  # pyflakes
     Iterator  # pyflakes
     List  # pyflakes
+    Optional  # pyflakes
     Set  # pyflakes
     Tuple  # pyflakes
 except ImportError:
@@ -99,7 +101,7 @@ class Cache(object):
         self._callbacks2 = {}  # type: Dict[str, List[Tuple[Callable[..., None], List[Any], Dict[Any,Any]]]] # nopep8
         self._weakref = weakref.WeakValueDictionary()  # type: weakref.WeakValueDictionary[str, apt.Package] # nopep8
         self._changes_count = -1
-        self._sorted_set = None  # type: List[str]
+        self._sorted_set = None  # type: Optional[List[str]]
 
         self.connect("cache_post_open", "_inc_changes_count")
         self.connect("cache_post_change", "_inc_changes_count")

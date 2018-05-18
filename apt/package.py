@@ -41,11 +41,13 @@ except ImportError:
 from collections import Mapping, Sequence
 
 try:
-    from typing import Any, Iterable, Iterator, List, Set, Tuple, Union
+    from typing import (Any, Iterable, Iterator, List, Optional, Set,
+                        Tuple, Union)
     Any  # pyflakes
     Iterable  # pyflakes
     Iterator  # pyflakes
     List  # pyflakes
+    Optional  # pyflakes
     Set  # pyflakes
     Tuple  # pyflakes
     Union  # pyflakes
@@ -808,7 +810,7 @@ class Version(object):
 
     @property
     def uri(self):
-        # type: () -> str
+        # type: () -> Optional[str]
         """Return a single URI for the binary.
 
         .. versionadded:: 0.7.10
@@ -889,6 +891,9 @@ class Version(object):
             files.append(apt_pkg.AcquireFile(acq, src.index.archive_uri(path),
                          md5, size, base, destfile=destfile))
         acq.run()
+
+        if dsc is None:
+            raise ValueError("No source for %r" % self)
 
         for item in acq.items:
             if item.status != item.STAT_DONE:
@@ -984,7 +989,7 @@ class VersionList(Sequence):
         return [ver.ver_str for ver in self._versions]
 
     def get(self, key, default=None):
-        # type: (str, Version) -> Version
+        # type: (str, Optional[Version]) -> Optional[Version]
         """Return the key or the default."""
         try:
             return self[key]
@@ -1021,7 +1026,7 @@ class Package(object):
         return self.name < other.name
 
     def __get_candidate(self):
-        # type: () -> Version
+        # type: () -> Optional[Version]
         """Return the candidate version of the package.
 
         This property is writeable to allow you to set the candidate version
@@ -1044,7 +1049,7 @@ class Package(object):
 
     @property
     def installed(self):
-        # type: () -> Version
+        # type: () -> Optional[Version]
         """Return the currently installed version of the package.
 
         .. versionadded:: 0.7.9
