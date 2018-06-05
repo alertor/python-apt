@@ -434,6 +434,7 @@ class Version(object):
         # type: (Package, apt_pkg.Version) -> None
         self.package = package
         self._cand = cand
+        self.package._pcache._weakversions.add(self)
 
     def _cmp(self, other):
         # FIXME: add type hint
