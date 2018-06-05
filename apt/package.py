@@ -375,6 +375,7 @@ class Version(object):
     def __init__(self, package, cand):
         self.package = package
         self._cand = cand
+        self.package._pcache._weakversions.add(self)
 
     def _cmp(self, other):
         """Compares against another apt.Version object or a version string.
