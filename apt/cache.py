@@ -416,21 +416,22 @@ class Cache(object):
             raise CacheClosedException(
                 "Cache object used after close() called")
 
-        # get lock
-        lockfile = apt_pkg.config.find_dir("Dir::Cache::Archives") + "lock"
-        lock = apt_pkg.get_lock(lockfile)
-        if lock < 0:
-            raise LockFailedException("Failed to lock %s" % lockfile)
+        # this may as well throw a SystemError exception
+        if not pm.get_archives(fetcher, self._list, self._records):
+            return False
+        # now run the fetcher, throw exception if something fails to be
+        # fetched
+        return self._run_fetcher(fetcher)
 
+    def _get_archive_lock(self, fetcher):
+        # type: (apt_pkg.Acquire) -> None
+        # get lock
+        archive_dir = apt_pkg.config.find_dir("Dir::Cache::Archives")
         try:
-            # this may as well throw a SystemError exception
-            if not pm.get_archives(fetcher, self._list, self._records):
-                return False
-            # now run the fetcher, throw exception if something fails to be
-            # fetched
-            return self._run_fetcher(fetcher)
-        finally:
-            os.close(lock)
+            fetcher.get_lock(archive_dir)
+        except apt_pkg.Error as e:
+            raise LockFailedException(("Failed to lock archive directory %s: "
+                                       " %s") % (archive_dir, e))
 
     def fetch_archives(self, progress=None, fetcher=None):
         # type: (AcquireProgress, apt_pkg.Acquire) -> int
@@ -452,6 +453,8 @@ class Cache(object):
             progress = apt.progress.text.AcquireProgress()
         if fetcher is None:
             fetcher = apt_pkg.Acquire(progress)
+
+        self._get_archive_lock(fetcher)
 
         return self._fetch_archives(fetcher,
                                     apt_pkg.PackageManager(self._depcache))
@@ -620,6 +623,8 @@ class Cache(object):
         with apt_pkg.SystemLock():
             pm = apt_pkg.PackageManager(self._depcache)
             fetcher = apt_pkg.Acquire(fetch_progress)
+            self._get_archive_lock(fetcher)
+
             while True:
                 # fetch archives first
                 res = self._fetch_archives(fetcher, pm)
