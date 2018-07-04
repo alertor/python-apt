@@ -357,6 +357,8 @@ class TestAptCache(unittest.TestCase):
             c = apt.Cache()
             p = c["a"]
             a_id = p.id
+            p_hash = hash(p)
+            set_of_p = set([p])
             self.write_status_file("baz")
             apt_pkg.init_system()
             c.open()
@@ -366,6 +368,11 @@ class TestAptCache(unittest.TestCase):
             # Marking a should still mark a, not b.
             p.mark_delete()
             self.assertEqual([p], c.get_changes())
+
+            # Ensure that p can still be found in a set of it, as a test
+            # for bug https://bugs.launchpad.net/bugs/1780099
+            self.assertEqual(hash(p), p_hash)
+            self.assertIn(p, set_of_p)
 
 
 if __name__ == "__main__":
