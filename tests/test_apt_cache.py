@@ -295,7 +295,7 @@ class TestAptCache(testcommon.TestCase):
                 print("Section: admin", file=fobj)
                 print("Installed-Size: 1", file=fobj)
                 print("Maintainer: X <x@x.invalid>", file=fobj)
-                print("Architecture: amd64", file=fobj)
+                print("Architecture: all", file=fobj)
                 print("Version: 1", file=fobj)
                 print("Description: blah", file=fobj)
                 print("", file=fobj)
