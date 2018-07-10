@@ -1,3 +1,20 @@
+python-apt (0.9.3.5ubuntu3) trusty-proposed; urgency=medium
+
+  * DepCache: Check that candidate we are setting belongs to package
+  * Raise CacheMismatchError if objects passed to DepCache are from different cache
+    (LP: #1737441); also includes the following regression fixes from bionic:
+    - apt.Cache: Remap objects when reopening cache (LP: 1773316 in bionic+), incl. regression fixes:
+      + Add more extensive test cases for cache remapping
+      + Regression fix: Do not override __hash__ in apt.package.Package (LP: 1780099 in bionic+)
+  * CI / pre-build / data changes:
+    - Replace broken travis CI integration with current docker-based one
+    - utils/get_debian_mirrors.py: Get data from salsa (for pre-build hook)
+    - debian/control: Point to salsa instead of anonscm
+    - debian/gbp.conf: Point to ubuntu/trusty branch
+    - Updated mirror list
+
+ -- Julian Andres Klode <juliank@ubuntu.com>  Tue, 10 Jul 2018 16:59:07 +0200
+
 python-apt (0.9.3.5ubuntu2) trusty-proposed; urgency=medium
 
   * Do not only look at Release files, but look at InRelease files as well.
