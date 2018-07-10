@@ -64,6 +64,8 @@ class TestAptCache(unittest.TestCase):
         for item in self._cnf:
             apt_pkg.config.set(item, self._cnf[item])
 
+        apt_pkg.init_system()
+
     @if_sources_list_is_readable
     def test_apt_cache(self):
         """cache: iterate all packages and all dependencies """
