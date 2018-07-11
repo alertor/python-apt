@@ -583,11 +583,12 @@ class Cache(object):
                 break
             lock_count += 1
 
-        res = install_progress.run(pm)
-
-        # Reinstate lock count
-        for i in range(lock_count):
-            apt_pkg.pkgsystem_lock()
+        try:
+            res = install_progress.run(pm)
+        finally:
+            # Reinstate lock count
+            for i in range(lock_count):
+                apt_pkg.pkgsystem_lock()
 
         try:
             install_progress.finishUpdate()  # type: ignore
