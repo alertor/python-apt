@@ -573,22 +573,15 @@ class Cache(object):
         except AttributeError:
             install_progress.start_update()
 
-        # Need to unlock really hard, since the lock is reference
-        # counted and we must make sure that we are _really_ unlocked.
-        lock_count = 0
-        while True:
-            try:
-                apt_pkg.pkgsystem_unlock()
-            except apt_pkg.Error:
-                break
-            lock_count += 1
+        did_unlock = apt_pkg.pkgsystem_is_locked()
+        if did_unlock:
+            apt_pkg.pkgsystem_unlock_inner()
 
         try:
             res = install_progress.run(pm)
         finally:
-            # Reinstate lock count
-            for i in range(lock_count):
-                apt_pkg.pkgsystem_lock()
+            if did_unlock:
+                apt_pkg.pkgsystem_lock_inner()
 
         try:
             install_progress.finishUpdate()  # type: ignore

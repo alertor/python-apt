@@ -31,3 +31,5 @@ Bugfixes
   :meth:`apt_pkg.pkgsystem_lock_inner`,
   :meth:`apt_pkg.pkgsystem_unlock_inner`,
   :meth:`apt_pkg.pkgsystem_is_locked`. 
+* :meth:`apt.Cache.commit` and :meth:`apt_pkg.DepCache.commit` now use
+  frontend locking to run dpkg.
