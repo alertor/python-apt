@@ -558,6 +558,8 @@ static char *doc_PkgSystemLockInner =
 "Reacquire the dpkg 'lock' lock file. Must be called only after\n"
 ":meth:`pkgsystem_unlock_inner` and only around invocations of dpkg.\n"
 "\n"
+".. versionadded:: 1.1.0~beta1ubuntu0.16.04.3\n"
+"\n"
 ".. versionadded:: 1.6.3\n"
 "\n"
 ".. versionadded:: 1.7";
@@ -577,6 +579,8 @@ static char *doc_PkgSystemUnLockInner =
 "Release the dpkg lock file 'lock'. To be called before manually\n"
 "invoking dpkg.\n"
 "\n"
+".. versionadded:: 1.1.0~beta1ubuntu0.16.04.3\n"
+"\n"
 ".. versionadded:: 1.6.3\n"
 "\n"
 ".. versionadded:: 1.7";
@@ -595,6 +599,8 @@ static char *doc_PkgSystemIsLocked =
 "pkgsystem_is_locked() -> bool\n\n"
 "Check if the system is locked. Can be used to check whether the inner\n"
 "lock needs to be released or not in generic code.\n"
+"\n"
+".. versionadded:: 1.1.0~beta1ubuntu0.16.04.3\n"
 "\n"
 ".. versionadded:: 1.6.3\n"
 "\n"
