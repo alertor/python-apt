@@ -40,6 +40,10 @@ class Dependency():
     dep_type_untranslated: str
     def all_targets(self) -> List[Version]: ...
 
+# This is really a SystemError, but we don't want to expose that
+class Error(Exception):
+    pass
+
 class Package():
     name: str
     version_list: List[Version]
