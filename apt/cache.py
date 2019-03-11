@@ -70,6 +70,29 @@ class CacheClosedException(Exception):
     """Exception that is thrown when the cache is used after close()."""
 
 
+class _WrappedLock(object):
+    """Wraps an apt_pkg.FileLock to raise LockFailedException.
+
+    Initialized using a directory path."""
+
+    def __init__(self, path):
+        # type: (str) -> None
+        self._path = path
+        self._lock = apt_pkg.FileLock(os.path.join(path, "lock"))
+
+    def __enter__(self):
+        # type: () -> None
+        try:
+            return self._lock.__enter__()
+        except apt_pkg.Error as e:
+            raise LockFailedException(("Failed to lock directory %s: %s") %
+                                       (self._path, e))
+
+    def __exit__(self, typ, value, traceback):
+        # type: (object, object, object) -> None
+        return self._lock.__exit__(typ, value, traceback)
+
+
 class Cache(object):
     """Dictionary-like package cache.
 
@@ -135,6 +158,11 @@ class Cache(object):
             # Call InitSystem so the change to Dir::State::Status is actually
             # recognized (LP: #320665)
             apt_pkg.init_system()
+
+        # Prepare a lock object (context manager for archive lock)
+        archive_dir = apt_pkg.config.find_dir("Dir::Cache::Archives")
+        self._archive_lock = _WrappedLock(archive_dir)
+
         self.open(progress)
 
     def fix_broken(self):
@@ -426,16 +454,6 @@ class Cache(object):
         # fetched
         return self._run_fetcher(fetcher)
 
-    def _get_archive_lock(self, fetcher):
-        # type: (apt_pkg.Acquire) -> None
-        # get lock
-        archive_dir = apt_pkg.config.find_dir("Dir::Cache::Archives")
-        try:
-            fetcher.get_lock(archive_dir)
-        except apt_pkg.Error as e:
-            raise LockFailedException(("Failed to lock archive directory %s: "
-                                       " %s") % (archive_dir, e))
-
     def fetch_archives(self, progress=None, fetcher=None):
         # type: (AcquireProgress, apt_pkg.Acquire) -> int
         """Fetch the archives for all packages marked for install/upgrade.
@@ -457,10 +475,9 @@ class Cache(object):
         if fetcher is None:
             fetcher = apt_pkg.Acquire(progress)
 
-        self._get_archive_lock(fetcher)
-
-        return self._fetch_archives(fetcher,
-                                    apt_pkg.PackageManager(self._depcache))
+        with self._archive_lock:
+            return self._fetch_archives(fetcher,
+                                        apt_pkg.PackageManager(self._depcache))
 
     def is_virtual_package(self, pkgname):
         # type: (str) -> bool
@@ -620,25 +637,25 @@ class Cache(object):
         with apt_pkg.SystemLock():
             pm = apt_pkg.PackageManager(self._depcache)
             fetcher = apt_pkg.Acquire(fetch_progress)
-            self._get_archive_lock(fetcher)
+            with self._archive_lock:
+                while True:
+                    # fetch archives first
+                    res = self._fetch_archives(fetcher, pm)
 
-            while True:
-                # fetch archives first
-                res = self._fetch_archives(fetcher, pm)
-
-                # then install
-                res = self.install_archives(pm, install_progress)
-                if res == pm.RESULT_COMPLETED:
-                    break
-                elif res == pm.RESULT_FAILED:
-                    raise SystemError("installArchives() failed")
-                elif res == pm.RESULT_INCOMPLETE:
-                    pass
-                else:
-                    raise SystemError("internal-error: unknown result code "
-                                      "from InstallArchives: %s" % res)
-                # reload the fetcher for media swaping
-                fetcher.shutdown()
+                    # then install
+                    res = self.install_archives(pm, install_progress)
+                    if res == pm.RESULT_COMPLETED:
+                        break
+                    elif res == pm.RESULT_FAILED:
+                        raise SystemError("installArchives() failed")
+                    elif res == pm.RESULT_INCOMPLETE:
+                        pass
+                    else:
+                        raise SystemError("internal-error: unknown result "
+                                          "code from InstallArchives: %s" %
+                                          res)
+                    # reload the fetcher for media swaping
+                    fetcher.shutdown()
         return (res == pm.RESULT_COMPLETED)
 
     def clear(self):
