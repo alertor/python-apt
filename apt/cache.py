@@ -537,43 +537,41 @@ class Cache(object):
         sources_list -- Update a alternative sources.list than the default.
         Note that the sources.list.d directory is ignored in this case
         """
-        lockfile = apt_pkg.config.find_dir("Dir::State::Lists") + "lock"
-        lock = apt_pkg.get_lock(lockfile)
-
-        if lock < 0:
-            raise LockFailedException("Failed to lock %s" % lockfile)
-
-        if sources_list:
-            old_sources_list = apt_pkg.config.find("Dir::Etc::sourcelist")
-            old_sources_list_d = apt_pkg.config.find("Dir::Etc::sourceparts")
-            old_cleanup = apt_pkg.config.find("APT::List-Cleanup")
-            apt_pkg.config.set("Dir::Etc::sourcelist",
-                               os.path.abspath(sources_list))
-            apt_pkg.config.set("Dir::Etc::sourceparts", "xxx")
-            apt_pkg.config.set("APT::List-Cleanup", "0")
-            slist = apt_pkg.SourceList()
-            slist.read_main_list()
-        else:
-            slist = self._list
-
-        try:
-            if fetch_progress is None:
-                fetch_progress = apt.progress.base.AcquireProgress()
-            try:
-                res = self._cache.update(fetch_progress, slist,
-                                         pulse_interval)
-            except SystemError as e:
-                raise FetchFailedException(e)
-            if not res and raise_on_error:
-                raise FetchFailedException()
-            else:
-                return res
-        finally:
-            os.close(lock)
+        with _WrappedLock(apt_pkg.config.find_dir("Dir::State::Lists")):
             if sources_list:
-                apt_pkg.config.set("Dir::Etc::sourcelist", old_sources_list)
-                apt_pkg.config.set("Dir::Etc::sourceparts", old_sources_list_d)
-                apt_pkg.config.set("APT::List-Cleanup", old_cleanup)
+                old_sources_list = apt_pkg.config.find("Dir::Etc::sourcelist")
+                old_sources_list_d = (
+                    apt_pkg.config.find("Dir::Etc::sourceparts"))
+                old_cleanup = apt_pkg.config.find("APT::List-Cleanup")
+                apt_pkg.config.set("Dir::Etc::sourcelist",
+                                   os.path.abspath(sources_list))
+                apt_pkg.config.set("Dir::Etc::sourceparts", "xxx")
+                apt_pkg.config.set("APT::List-Cleanup", "0")
+                slist = apt_pkg.SourceList()
+                slist.read_main_list()
+            else:
+                slist = self._list
+
+            try:
+                if fetch_progress is None:
+                    fetch_progress = apt.progress.base.AcquireProgress()
+                try:
+                    res = self._cache.update(fetch_progress, slist,
+                                             pulse_interval)
+                except SystemError as e:
+                    raise FetchFailedException(e)
+                if not res and raise_on_error:
+                    raise FetchFailedException()
+                else:
+                    return res
+            finally:
+                if sources_list:
+                    apt_pkg.config.set("Dir::Etc::sourcelist",
+                                       old_sources_list)
+                    apt_pkg.config.set("Dir::Etc::sourceparts",
+                                       old_sources_list_d)
+                    apt_pkg.config.set("APT::List-Cleanup",
+                                       old_cleanup)
 
     def install_archives(self, pm, install_progress):
         # type: (apt_pkg.PackageManager, InstallProgress) -> int
