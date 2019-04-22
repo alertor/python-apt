@@ -1,3 +1,10 @@
+python-apt (1.9.0~alpha0~ubuntu1) eoan; urgency=medium
+
+  * data/templates/Ubuntu.info.in: Add eoan (adjective only so far)
+  * Automatic mirror list update
+
+ -- Julian Andres Klode <juliank@ubuntu.com>  Mon, 22 Apr 2019 12:42:37 +0200
+
 python-apt (1.8.4) unstable; urgency=medium
 
   * apt.Cache: Fix (un)locking in various places
