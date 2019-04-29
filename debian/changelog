@@ -1,3 +1,11 @@
+python-apt (1.1.0~beta1ubuntu0.16.04.4) xenial; urgency=medium
+
+  * apt.Cache: Fix (un)locking of archives (Closes: #922416) (LP: #1826870)
+  * apt.Cache: Use explicit, more safe locking in update()
+  * Update mirror lists
+
+ -- Julian Andres Klode <juliank@ubuntu.com>  Mon, 29 Apr 2019 14:11:32 +0200
+
 python-apt (1.1.0~beta1ubuntu0.16.04.3) xenial; urgency=medium
 
   * Frontend locking and related locking improvements (LP: #1795407)
