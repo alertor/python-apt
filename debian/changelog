@@ -1,3 +1,11 @@
+python-apt (1.7.1) cosmic; urgency=medium
+
+  * apt.Cache: Fix (un)locking of archives (Closes: #922416) (LP: #1826870)
+  * apt.Cache: Use explicit, more safe locking in update()
+  * Update mirror lists
+
+ -- Julian Andres Klode <juliank@ubuntu.com>  Mon, 29 Apr 2019 13:44:16 +0200
+
 python-apt (1.7.0) unstable; urgency=medium
 
   * Fix escaping in regular expressions and ignore some pep8 warnings
