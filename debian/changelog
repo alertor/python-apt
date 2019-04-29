@@ -1,3 +1,11 @@
+python-apt (1.6.4) bionic; urgency=medium
+
+  * apt.Cache: Fix (un)locking of archives (Closes: #922416) (LP: #1826870)
+  * apt.Cache: Use explicit, more safe locking in update()
+  * Update mirror lists
+
+ -- Julian Andres Klode <juliank@ubuntu.com>  Mon, 29 Apr 2019 13:49:15 +0200
+
 python-apt (1.6.3) bionic; urgency=medium
 
   * Frontend locking and related locking improvements (LP: #1795407)
