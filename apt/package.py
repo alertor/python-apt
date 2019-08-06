@@ -94,12 +94,12 @@ if sys.version_info.major >= 3:
     unicode = str
 
 
-def _file_is_same(path, size, md5):
-    # type: (str, int, str) -> bool
+def _file_is_same(path, size, hashes):
+    # type: (str, int, apt_pkg.HashStringList) -> bool
     """Return ``True`` if the file is the same."""
     if os.path.exists(path) and os.path.getsize(path) == size:
         with open(path) as fobj:
-            return apt_pkg.md5sum(fobj) == md5
+            return apt_pkg.Hashes(fobj).hashes == hashes
     return False
 
 
@@ -909,16 +909,16 @@ class Version(object):
         if not source_lookup:
             raise ValueError("No source for %r" % self)
         files = list()
-        for md5, size, path, type_ in src.files:
-            base = os.path.basename(path)
+        for fil in src.files:
+            base = os.path.basename(fil.path)
             destfile = os.path.join(destdir, base)
-            if type_ == 'dsc':
+            if fil.type == 'dsc':
                 dsc = destfile
-            if _file_is_same(destfile, size, md5):
+            if _file_is_same(destfile, fil.size, fil.hashes):
                 logging.debug('Ignoring already existing file: %s' % destfile)
                 continue
-            files.append(apt_pkg.AcquireFile(acq, src.index.archive_uri(path),
-                         md5, size, base, destfile=destfile))
+            files.append(apt_pkg.AcquireFile(acq, src.index.archive_uri(fil.path),
+                         str(fil.hashes.find("SHA256")), fil.size, base, destfile=destfile))
         acq.run()
 
         if dsc is None:
