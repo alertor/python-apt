@@ -69,7 +69,7 @@ class TestSourceRecords(testcommon.TestCase):
 
         # unpacking as a tuple works as before
         md5, size, path, type_ = f = src.files[0]
-        self.assertEqual(md5, "6576a28fe1918ce10bd31543ba545901")
+        self.assertEqual(md5, None)
         self.assertEqual(size, 1578)
         self.assertEqual(path, "dh-autoreconf_16.dsc")
         self.assertEqual(type_, "dsc")
@@ -86,7 +86,7 @@ class TestSourceRecords(testcommon.TestCase):
 
         # unpacking as a tuple works as before
         md5, size, path, type_ = f = src.files[1]
-        self.assertEqual(md5, "302c8bf43db02412e3f2197fd0f2ee0f")
+        self.assertEqual(md5, None)
         self.assertEqual(size, 7372)
         self.assertEqual(path, "dh-autoreconf_16.tar.xz")
         self.assertEqual(type_, "tar")

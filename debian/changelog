@@ -1,3 +1,28 @@
+python-apt (1.9.0) experimental; urgency=medium
+
+  * python/pkgsrcrecords.cc: Improve readability of ...BuildDepends
+  * Port to APT 1.9.0; incompatible changes:
+    - Remove install_protect() methods
+    - Remove Package.section attributes
+    - Remove apt_pkg.rewrite_section()
+    - Remove unneccessary sptr includes
+    - apt_pkg.Hashes: remove md5, sha1, sha256 members
+    - Port install progress to APT::Progress::PackageManagerProgressFd
+    - apt_pkg.SourceRecords: Set md5 to None in tuple compat
+    - Remove apt_pkg.Policy(: Package) variant
+    - Remove Policy.get_match() method
+    - Add apt_pkg.TagSection.write() method
+    - apt_pkg.Hashes:
+      + Make comparable
+      + add hashvalue attribute
+    - debian/control: Bump libapt-pkg-dev b-d to 1.9.0~
+  * data/templates/Ubuntu.info.in: Add Eoan Ermine
+  * Bug fixes:
+    - apt_pkg.TagRemove: Terminate keyword list array in constructor
+    - apt_pkg.HashStringList: Avoid nullptr dereference on no result
+
+ -- Julian Andres Klode <jak@debian.org>  Mon, 24 Jun 2019 15:54:56 +0200
+
 python-apt (1.9.0~alpha0~ubuntu1) eoan; urgency=medium
 
   * data/templates/Ubuntu.info.in: Add eoan (adjective only so far)

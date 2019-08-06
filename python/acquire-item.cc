@@ -273,7 +273,7 @@ static PyObject *acquirefile_new(PyTypeObject *type, PyObject *Args, PyObject * 
     pkgAcquire *fetcher = GetCpp<pkgAcquire*>(pyfetcher);
     pkgAcqFile *af = new pkgAcqFile(fetcher,  // owner
                                     uri, // uri
-                                    hash,  // hash
+                                    HashStringList(hash),  // hash
                                     size,   // size
                                     descr, // descr
                                     shortDescr,

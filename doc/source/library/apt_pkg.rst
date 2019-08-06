@@ -1149,11 +1149,7 @@ Package Pinning with :class:`Policy`
         Get the best package for the job; that is, the package with the
         highest pin priority.
 
-    .. method:: get_match(package: apt_pkg.Package) -> apt_pkg.Version
-
-        Get a version for the package.
-
-    .. method:: get_priority(package: Union[apt_pkg.Package, apt_pkg.Version, apt_pkg.PackageFile]) -> int
+    .. method:: get_priority(package: Union[apt_pkg.Version, apt_pkg.PackageFile]) -> int
 
         Get the pin priority of the package, version, or package file
         given by *package*.
@@ -1916,6 +1912,8 @@ generic hash support:
         The type of the hash, as a string. This may be "MD5Sum", "SHA1",
         "SHA256" or "SHA512".
 
+    .. autoattribute:: hashvalue
+
     .. method:: verify_file(filename: str) -> bool
 
         Verify that the file given by the parameter *filename* matches the
@@ -2106,6 +2104,9 @@ section as a string.
         Return a list of keys in the section.
 
 
+    .. automethod:: write
+
+
 A function can be rewritten by using tag classes:
 
 .. autoclass:: Tag
@@ -2145,10 +2146,6 @@ Pre-defined ordering for tag sections are:
 
     The order in which the information for source packages should be rewritten,
     i.e. the order in which the fields should appear.
-
-Before APT 1.1, the function :func:`rewrite_section` was used.
-
-.. autofunction:: rewrite_section
 
 
 Dependencies

@@ -13,7 +13,6 @@
 
 #include <apt-pkg/pkgcache.h>
 #include <apt-pkg/cachefile.h>
-#include <apt-pkg/sptr.h>
 #include <apt-pkg/configuration.h>
 #include <apt-pkg/sourcelist.h>
 #include <apt-pkg/error.h>
@@ -597,16 +596,6 @@ PyTypeObject PyGroupList_Type =
 
 MkGet(PackageGetName,CppPyString(Pkg.Name()))
 MkGet(PackageGetArch,CppPyString(Pkg.Arch()))
-#pragma GCC diagnostic push
-#pragma GCC diagnostic ignored "-Wdeprecated-declarations"
-static PyObject *PackageGetSection(PyObject *Self,void*)
-{
-    pkgCache::PkgIterator &Pkg = GetCpp<pkgCache::PkgIterator>(Self);
-    if (PyErr_WarnEx(PyExc_DeprecationWarning, "Package.section is deprecated, use Version.section instead", 1) == -1)
-      return NULL;
-    return CppPyString(Pkg.Section());
-}
-#pragma GCC diagnostic pop
 MkGet(PackageGetRevDependsList,CppPyObject_NEW<RDepListStruct>(Owner,
                                &PyDependencyList_Type, Pkg.RevDependsList()))
 MkGet(PackageGetProvidesList,CreateProvides(Owner,Pkg.ProvidesList()))
@@ -692,8 +681,6 @@ static PyGetSetDef PackageGetSet[] = {
     {"name",PackageGetName,0,
      "The name of the package."},
     {"architecture",PackageGetArch,0, "The architecture of the package."},
-    {"section",PackageGetSection,0,
-     "The section of the package."},
     {"rev_depends_list",PackageGetRevDependsList,0,
      "An apt_pkg.DependencyList object of all reverse dependencies."},
     {"provides_list",PackageGetProvidesList,0,

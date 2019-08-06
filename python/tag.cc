@@ -195,6 +195,46 @@ static PyObject *TagSecFindFlag(PyObject *Self,PyObject *Args)
    return PyBool_FromLong(Flag);
 }
 
+static char *doc_Write =
+    "write(file: int, order: List[str], rewrite: List[Tag]) -> None\n\n"
+    "Rewrites the section into the given file descriptor, which should be\n"
+    "a file descriptor or an object providing a fileno() method.\n"
+    "\n"
+    ".. versionadded:: 1.9.0";
+static PyObject *TagSecWrite(PyObject *Self, PyObject *Args, PyObject *kwds)
+{
+   char *kwlist[] = {"file", "order", "rewrite", nullptr};
+   PyObject *pFile;
+   PyObject *pOrder;
+   PyObject *pRewrite;
+   if (PyArg_ParseTupleAndKeywords(Args,kwds, "OO!O!",kwlist, &pFile,&PyList_Type,&pOrder, &PyList_Type, &pRewrite) == 0)
+      return nullptr;
+
+   int fileno = PyObject_AsFileDescriptor(pFile);
+   // handle invalid arguments
+   if (fileno == -1)
+   {
+      PyErr_SetString(PyExc_TypeError,
+                      "Argument must be string, fd or have a fileno() method");
+      return 0;
+   }
+
+   FileFd file(fileno);
+   const char **order = ListToCharChar(pOrder,true);
+   if (order == nullptr)
+      return nullptr;
+   std::vector<pkgTagSection::Tag> rewrite;
+   for (int I = 0; I != PySequence_Length(pRewrite); I++) {
+      PyObject *item = PySequence_GetItem(pRewrite, I);
+      if (!PyObject_TypeCheck(item, &PyTag_Type))
+         return PyErr_SetString(PyExc_TypeError, "Wrong type for tag in list"), nullptr;
+      rewrite.push_back(GetCpp<pkgTagSection::Tag>(item));
+   }
+
+   return HandleErrors(PyBool_FromLong(GetCpp<pkgTagSection>(Self).Write(file, order, rewrite)));
+}
+
+
 // Map access, operator []
 static PyObject *TagSecMap(PyObject *Self,PyObject *Arg)
 {
@@ -568,88 +608,6 @@ static PyObject *TagFileNew(PyTypeObject *type,PyObject *Args,PyObject *kwds)
    return HandleErrors(New);
 }
 									/*}}}*/
-// RewriteSection - Rewrite a section..					/*{{{*/
-// ---------------------------------------------------------------------
-/* An interesting future extension would be to add a user settable
-   order list */
-char *doc_RewriteSection =
-"rewrite_section(section: TagSection, order: list, rewrite_list: list) -> str\n"
-"\n"
-"Rewrite the section given by *section* using *rewrite_list*, and order the\n"
-"fields according to *order*.\n"
-"\n"
-"The parameter *order* is a :class:`list` object containing the names of the\n"
-"fields in the order they should appear in the rewritten section.\n"
-":data:`apt_pkg.REWRITE_PACKAGE_ORDER` and\n"
-":data:`apt_pkg.REWRITE_SOURCE_ORDER` are two predefined lists for rewriting\n"
-"package and source sections, respectively.\n"
-"\n"
-"The parameter *rewrite_list* is a list of tuples of the form\n"
-"``(tag, newvalue[, renamed_to])``, where *tag* describes the field which\n"
-"should be changed, *newvalue* the value which should be inserted or\n"
-"``None`` to delete the field, and the optional *renamed_to* can be used\n"
-"to rename the field.\n\n"
-".. deprecated:: 1.1\n\n"
-"    Replaced by :meth:`TagSection.write`";
-PyObject *RewriteSection(PyObject *self,PyObject *Args)
-{
-   PyObject *Section;
-   PyObject *Order;
-   PyObject *Rewrite;
-
-   if (PyArg_ParseTuple(Args,"O!O!O!",&PyTagSection_Type,&Section,
-			&PyList_Type,&Order,&PyList_Type,&Rewrite) == 0)
-      return 0;
-
-   if (PyErr_WarnEx(PyExc_DeprecationWarning,
-                    "apt_pkg.rewrite_section() is deprecated. Use TagSection.write instead", 1) == -1)
-      return 0;
-
-   // Convert the order list
-   const char **OrderList = ListToCharChar(Order,true);
-
-   // Convert the Rewrite list.
-APT_IGNORE_DEPRECATED_PUSH
-   TFRewriteData *List = new TFRewriteData[PySequence_Length(Rewrite)+1];
-   memset(List,0,sizeof(*List)*(PySequence_Length(Rewrite)+1));
-   for (int I = 0; I != PySequence_Length(Rewrite); I++)
-   {
-      List[I].NewTag = 0;
-      if (PyArg_ParseTuple(PySequence_GetItem(Rewrite,I),"sz|s",
-			  &List[I].Tag,&List[I].Rewrite,&List[I].NewTag) == 0)
-      {
-	 delete [] OrderList;
-	 delete [] List;
-	 return 0;
-      }
-   }
-APT_IGNORE_DEPRECATED_POP
-   /* This is a glibc extension.. If not running on glibc I'd just take
-      this whole function out, it is probably infrequently used */
-   char *bp = 0;
-   size_t size;
-   FILE *F = open_memstream (&bp, &size);
-
-APT_IGNORE_DEPRECATED_PUSH
-   // Do the rewrite
-   bool Res = TFRewrite(F,GetCpp<pkgTagSection>(Section),OrderList,List);
-APT_IGNORE_DEPRECATED_POP
-   delete [] OrderList;
-   delete [] List;
-   fclose(F);
-
-   if (Res == false)
-   {
-      free(bp);
-      return HandleErrors();
-   }
-
-   // Return the string
-   PyObject *ResObj = TagSecString_FromStringAndSize(Section,bp,size);
-   free(bp);
-   return HandleErrors(ResObj);
-}
-									/*}}}*/
 
 // Method table for the Tag Section object
 static PyMethodDef TagSecMethods[] =
@@ -659,6 +617,7 @@ static PyMethodDef TagSecMethods[] =
    {"find_raw",TagSecFindRaw,METH_VARARGS,doc_FindRaw},
    {"find_flag",TagSecFindFlag,METH_VARARGS,doc_FindFlag},
    {"bytes",TagSecBytes,METH_VARARGS,doc_Bytes},
+   {"write",(PyCFunction) TagSecWrite,METH_VARARGS|METH_KEYWORDS,doc_Write},
 
    // Python Special
    {"keys",TagSecKeys,METH_VARARGS,doc_Keys},
@@ -877,7 +836,7 @@ static PyObject *PyTagRewrite_New(PyTypeObject *type,PyObject *Args,PyObject *kw
 
 static PyObject *PyTagRemove_New(PyTypeObject *type,PyObject *Args,PyObject *kwds) {
    char *name;
-   char *kwlist[] = {"name"};
+   char *kwlist[] = {"name", nullptr};
 
    if (PyArg_ParseTupleAndKeywords(Args,kwds,"s",kwlist, &name) == 0)
       return nullptr;

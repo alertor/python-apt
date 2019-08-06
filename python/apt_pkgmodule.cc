@@ -643,7 +643,6 @@ static PyMethodDef methods[] =
     "and only does translations after setlocale() has been called."},
 
    // Tag File
-   {"rewrite_section",RewriteSection,METH_VARARGS,doc_RewriteSection},
 
    {"open_maybe_clear_signed_file",PyOpenMaybeClearSignedFile,METH_VARARGS,
     doc_OpenMaybeClearSignedFile},

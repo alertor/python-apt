@@ -790,11 +790,6 @@ class ProblemResolver(object):
         """Reset the package to the default state."""
         self._resolver.clear(package._pkg)
 
-    def install_protect(self):
-        # type: () -> None
-        """mark protected packages for install or removal."""
-        self._resolver.install_protect()
-
     def protect(self, package):
         # type: (Package) -> None
         """Protect a package so it won't be removed."""

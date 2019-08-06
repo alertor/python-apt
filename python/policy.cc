@@ -43,19 +43,14 @@ static char *policy_get_priority_doc =
 
 PyObject *policy_get_priority(PyObject *self, PyObject *arg) {
     pkgPolicy *policy = GetCpp<pkgPolicy *>(self);
-    if (PyObject_TypeCheck(arg, &PyPackage_Type)) {
-        if (PyErr_WarnEx(PyExc_DeprecationWarning, "Passing apt_pkg.Package to Policy.get_priority() is deprecated, pass a version instead.", 1) == -1)
-            return NULL;
-        pkgCache::PkgIterator pkg = GetCpp<pkgCache::PkgIterator>(arg);
-        return MkPyNumber(policy->GetPriority(pkg));
-    } else if (PyObject_TypeCheck(arg, &PyVersion_Type)) {
+    if (PyObject_TypeCheck(arg, &PyVersion_Type)) {
         auto ver = GetCpp<pkgCache::VerIterator>(arg);
         return MkPyNumber(policy->GetPriority(ver));
     } else if (PyObject_TypeCheck(arg, &PyPackageFile_Type)) {
         pkgCache::PkgFileIterator pkgfile = GetCpp<pkgCache::PkgFileIterator>(arg);
         return MkPyNumber(policy->GetPriority(pkgfile));
     } else {
-        PyErr_SetString(PyExc_TypeError,"Argument must be of Package() or PackageFile().");
+        PyErr_SetString(PyExc_TypeError,"Argument must be of Version or PackageFile.");
         return 0;
     }
 }
@@ -75,21 +70,6 @@ PyObject *policy_get_candidate_ver(PyObject *self, PyObject *arg) {
         PyErr_SetString(PyExc_TypeError,"Argument must be of Package().");
         return 0;
     }
-}
-
-static char *policy_get_match_doc =
-    "get_match(package: apt_pkg.Package) -> apt_pkg.Version\n\n"
-    "Return a matching version for the given package.";
-
-static PyObject *policy_get_match(PyObject *self, PyObject *arg) {
-    if (PyObject_TypeCheck(arg, &PyPackage_Type) == 0) {
-        PyErr_SetString(PyExc_TypeError,"Argument must be of Package().");
-        return 0;
-    }
-    pkgPolicy *policy = GetCpp<pkgPolicy *>(self);
-    pkgCache::PkgIterator pkg = GetCpp<pkgCache::PkgIterator>(arg);
-    pkgCache::VerIterator ver = policy->GetMatch(pkg);
-    return CppPyObject_NEW<pkgCache::VerIterator>(arg,&PyVersion_Type,ver);
 }
 
 static char *policy_read_pinfile_doc =
@@ -176,7 +156,6 @@ static PyMethodDef policy_methods[] = {
 #endif
     {"create_pin",policy_create_pin,METH_VARARGS,policy_create_pin_doc},
     {"init_defaults",policy_init_defaults,METH_VARARGS,policy_init_defaults_doc},
-    {"get_match",(PyCFunction)policy_get_match,METH_O, policy_get_match_doc},
     {}
 };
 

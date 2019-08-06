@@ -51,10 +51,12 @@ static PyObject *hashstringlist_find(PyObject *self, PyObject *args)
     if (PyArg_ParseTuple(args, "|s", &type) == 0)
         return 0;
 
-    HashString *hs = new HashString;
-    *hs = *(GetCpp<HashStringList>(self).find(type));
+    const HashString *hsf = GetCpp<HashStringList>(self).find(type);
+    if (hsf == nullptr)
+        return PyErr_Format(PyExc_KeyError, "Could not find hash type %s", type);
 
-    return HandleErrors(PyHashString_FromCpp(hs, true, nullptr));
+
+    return HandleErrors(PyHashString_FromCpp(new HashString(*hsf), true, nullptr));
 }
 
 static const char hashstringlist_append_doc[] =

@@ -24,7 +24,6 @@
 #include "apt_instmodule.h"
 #include <apt-pkg/arfile.h>
 #include <apt-pkg/error.h>
-#include <apt-pkg/sptr.h>
 #include <apt-pkg/aptconfiguration.h>
 #include <apt-pkg/configuration.h>
 #include <utime.h>

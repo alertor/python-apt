@@ -116,7 +116,7 @@ BaseURI-i386: http://archive.ubuntu.com/ubuntu
 MatchURI-i386: archive.ubuntu.com/ubuntu
 MirrorsFile-amd64: Ubuntu.mirrors
 MirrorsFile-i386: Ubuntu.mirrors
-_Description: Ubuntu 19.10 'Eoan Eanimal'
+_Description: Ubuntu 19.10 'Eoan Ermine'
 Component: main
 _CompDescription: Officially supported
 _CompDescriptionLong: Canonical-supported free and open-source software
@@ -136,14 +136,14 @@ ParentSuite: eoan
 RepositoryType: deb-src
 BaseURI: http://archive.ubuntu.com/ubuntu/
 MatchURI: archive.ubuntu.com/ubuntu|ports.ubuntu.com/ubuntu-ports
-_Description: Ubuntu 19.10 'Eoan Eanimal'
+_Description: Ubuntu 19.10 'Eoan Ermine'
 
 Suite: eoan
 RepositoryType: deb
 MatchName: .*
 BaseURI: cdrom:\[Ubuntu.*19.10
 MatchURI: cdrom:\[Ubuntu.*19.10
-_Description: Cdrom with Ubuntu 19.10 'Eoan Eanimal'
+_Description: Cdrom with Ubuntu 19.10 'Eoan Ermine'
 Available: False
 Component: main
 _CompDescription: Officially supported
