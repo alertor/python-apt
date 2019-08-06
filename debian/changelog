@@ -1,3 +1,11 @@
+python-apt (1.9.0ubuntu1) eoan; urgency=medium
+
+  * apt/package.py: Use SHA256 instead of MD5 for fetching checks.
+    This should unbreak snapd, but should really be cleaned up more
+    and use the entire HashStringList (LP: #1837926)
+
+ -- Julian Andres Klode <juliank@ubuntu.com>  Tue, 06 Aug 2019 14:34:24 +0200
+
 python-apt (1.9.0) experimental; urgency=medium
 
   * python/pkgsrcrecords.cc: Improve readability of ...BuildDepends
