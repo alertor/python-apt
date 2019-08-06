@@ -225,6 +225,7 @@ class HashString:
 
     hashtype: str
     hashvalue: str
+    usable: bool
 
 class HashStringList:
     def append(self, object: HashString) -> None: ...
@@ -232,6 +233,7 @@ class HashStringList:
     def verify_file(self, filename: str) -> bool: ...
 
     file_size: int
+    usable: bool
 
 class AcquireFile(AcquireItem):
     def __init__(self, owner: Acquire, uri: str, hash: Optional[Union[HashStringList, str]], size: int=0, descr: str="", short_descr: str="", destdir: str="", destfile: str="") -> None: ...
