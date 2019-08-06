@@ -1919,6 +1919,8 @@ generic hash support:
 
     .. autoattribute:: hashvalue
 
+    .. autoattribute:: usable
+
     .. method:: verify_file(filename: str) -> bool
 
         Verify that the file given by the parameter *filename* matches the
@@ -1934,6 +1936,8 @@ generic hash support:
     .. describe:: list[index]
 
         Get the :class:`HashString` object at the specified index.
+
+    .. autoattribute:: usable
 
 The :mod:`apt_pkg` module also provides the functions :func:`md5sum`,
 :func:`sha1sum` and :func:`sha256sum` for creating a single hash from a
