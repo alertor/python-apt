@@ -73,17 +73,21 @@ if sys.version_info.major >= 3:
     unicode = str
 
 
-def _file_is_same(path, size, md5):
-    # type: (str, int, str) -> bool
+def _file_is_same(path, size, hashes):
+    # type: (str, int, apt_pkg.HashStringList) -> bool
     """Return ``True`` if the file is the same."""
     if os.path.exists(path) and os.path.getsize(path) == size:
         with open(path) as fobj:
-            return apt_pkg.md5sum(fobj) == md5
+            return apt_pkg.Hashes(fobj).hashes == hashes
     return False
 
 
 class FetchError(Exception):
     """Raised when a file could not be fetched."""
+
+
+class UntrustedError(FetchError):
+    """Raised when a file did not have a trusted hash."""
 
 
 class BaseDependency(object):
@@ -845,11 +849,19 @@ class Version(object):
         """
         base = os.path.basename(self._records.filename)
         destfile = os.path.join(destdir, base)
-        if _file_is_same(destfile, self.size, self._records.md5_hash):
+        if _file_is_same(destfile, self.size, self._records.hashes):
             logging.debug('Ignoring already existing file: %s' % destfile)
             return os.path.abspath(destfile)
+
+        if not self.uri:
+            raise ValueError("No URI for this binary.")
+        hashes = self._records.hashes
+        if not hashes.usable:
+            raise UntrustedError("The item %r could not be fetched: "
+                                     "No trusted hash found." %
+                                     destfile)
         acq = apt_pkg.Acquire(progress or apt.progress.text.AcquireProgress())
-        acqfile = apt_pkg.AcquireFile(acq, self.uri, self._records.md5_hash,  # type: ignore # TODO: Do not use MD5 # nopep8
+        acqfile = apt_pkg.AcquireFile(acq, self.uri, hashes,
                                       self.size, base, destfile=destfile)
         acq.run()
 
@@ -890,16 +902,22 @@ class Version(object):
         if not source_lookup:
             raise ValueError("No source for %r" % self)
         files = list()
-        for md5, size, path, type_ in src.files:
-            base = os.path.basename(path)
+        for fil in src.files:
+            base = os.path.basename(fil.path)
             destfile = os.path.join(destdir, base)
-            if type_ == 'dsc':
+            if fil.type == 'dsc':
                 dsc = destfile
-            if _file_is_same(destfile, size, md5):
+            if _file_is_same(destfile, fil.size, fil.hashes):
                 logging.debug('Ignoring already existing file: %s' % destfile)
                 continue
-            files.append(apt_pkg.AcquireFile(acq, src.index.archive_uri(path),
-                         md5, size, base, destfile=destfile))
+
+            if not fil.hashes.usable:
+                raise UntrustedError("The item %r could not be fetched: "
+                                         "No trusted hash found." %
+                                         destfile)
+            files.append(apt_pkg.AcquireFile(acq,
+                            src.index.archive_uri(fil.path),
+                            fil.hashes, fil.size, base, destfile=destfile))
         acq.run()
 
         if dsc is None:
