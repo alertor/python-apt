@@ -1879,6 +1879,9 @@ generic hash support:
         The type of the hash, as a string. This may be "MD5Sum", "SHA1",
         "SHA256" or "SHA512".
 
+    .. autoattribute:: usable
+
+
     .. method:: verify_file(filename: str) -> bool
 
         Verify that the file given by the parameter *filename* matches the
@@ -1894,6 +1897,8 @@ generic hash support:
     .. describe:: list[index]
 
         Get the :class:`HashString` object at the specified index.
+
+    .. autoattribute:: usable
 
 The :mod:`apt_pkg` module also provides the functions :func:`md5sum`,
 :func:`sha1sum` and :func:`sha256sum` for creating a single hash from a
