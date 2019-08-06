@@ -49,11 +49,46 @@ if sys.version_info.major >= 3:
     unicode = str
 
 
-def _file_is_same(path, size, md5):
+def _get_binary_hash(binrec):
+    """Return a hash string"""
+    if binrec.sha256_hash:
+        return apt_pkg.HashString("SHA256", binrec.sha256_hash)
+    if binrec.sha1_hash:
+        return apt_pkg.HashString("SHA1", binrec.sha1_hash)
+    if binrec.md5_hash:
+        return apt_pkg.HashString("MD5Sum", binrec.md5_hash)
+    return None
+
+
+def _get_source_hashs(srcrec):
+    """Return a mapping name -> (hashstring, size)"""
+    fields = ["Checksums-Sha256", "Checksums-Sha1", "Files"]
+    types = ["SHA256", "SHA1", "MD5Sum"]
+    result = {}
+
+    section = apt_pkg.TagSection(srcrec.record)
+
+    for field, hashtype in zip(fields, types):
+        try:
+            files = section[field]
+        except KeyError:
+            continue
+
+        for hashsum, size, fname in (l.split() for l in files.splitlines()):
+            if fname not in result:
+                result[fname] = (apt_pkg.HashString(hashtype, hashsum),
+                                 int(size))
+
+    for md5, size, path, typ in srcrec.files:
+        for key, (hashstring, size) in result.items():
+            if path.endswith(key):
+                yield (hashstring, size, path, typ)
+
+
+def _file_is_same(path, size, hashstring):
     """Return ``True`` if the file is the same."""
     if os.path.exists(path) and os.path.getsize(path) == size:
-        with open(path) as fobj:
-            return apt_pkg.md5sum(fobj) == md5
+        return hashstring.verify_file(path)
 
 
 class FetchError(Exception):
@@ -582,11 +617,13 @@ class Version(object):
         """
         base = os.path.basename(self._records.filename)
         destfile = os.path.join(destdir, base)
-        if _file_is_same(destfile, self.size, self._records.md5_hash):
+        hashstring = _get_binary_hash(self._records)
+        if _file_is_same(destfile, self.size, hashstring):
             print(('Ignoring already existing file: %s' % destfile))
             return os.path.abspath(destfile)
         acq = apt_pkg.Acquire(progress or apt.progress.text.AcquireProgress())
-        acqfile = apt_pkg.AcquireFile(acq, self.uri, self._records.md5_hash,
+        acqfile = apt_pkg.AcquireFile(acq, self.uri,
+                                      hashstring and str(hashstring),
                                       self.size, base, destfile=destfile)
         acq.run()
 
@@ -626,16 +663,17 @@ class Version(object):
         if not source_lookup:
             raise ValueError("No source for %r" % self)
         files = list()
-        for md5, size, path, type_ in src.files:
+        for hashstring, size, path, type_ in _get_source_hashs(src):
             base = os.path.basename(path)
             destfile = os.path.join(destdir, base)
             if type_ == 'dsc':
                 dsc = destfile
-            if _file_is_same(destfile, size, md5):
+            if _file_is_same(destfile, size, hashstring):
                 print(('Ignoring already existing file: %s' % destfile))
                 continue
             files.append(apt_pkg.AcquireFile(acq, src.index.archive_uri(path),
-                         md5, size, base, destfile=destfile))
+                         hashstring and str(hashstring),
+                         size, base, destfile=destfile))
         acq.run()
 
         for item in acq.items:
