@@ -1738,8 +1738,8 @@ installation.
     of apt is supported.
 
     The parameter *hash* refers to the hash of the file. If this is set
-    libapt will check the file after downloading. See :class:`HashString`
-    for the combined form string format description.
+    libapt will check the file after downloading. This should be an instance
+    of :class:`apt_pkg.HashStringList`.
 
     The parameter *size* can be used to specify the size of the package,
     which can then be used to calculate the progress and validate the download.
@@ -1762,6 +1762,11 @@ installation.
 
     In terms of attributes, this class is a subclass of :class:`AcquireItem`
     and thus inherits all its attributes.
+
+    .. versionchanged:: 1.8.5
+
+        The *hash* parameter now accepts an :class:`apt_pkg.HashStringList`,
+        the old *md5* parameter has been removed (backported from 1.9.1)
 
 .. class:: AcquireWorker
 
