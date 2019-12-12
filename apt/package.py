@@ -854,8 +854,9 @@ class Version(object):
         except StopIteration:
             return None
 
-    def fetch_binary(self, destdir='', progress=None):
-        # type: (str, AcquireProgress) -> str
+    def fetch_binary(self, destdir='', progress=None,
+                     allow_unauthenticated=None):
+        # type: (str, Optional[AcquireProgress], Optional[bool]) -> str
         """Fetch the binary version of the package.
 
         The parameter *destdir* specifies the directory where the package will
@@ -865,8 +866,15 @@ class Version(object):
         object. If not specified or None, apt.progress.text.AcquireProgress()
         is used.
 
+        The keyword-only parameter *allow_unauthenticated* specifies whether
+        to allow unauthenticated downloads. If not specified, it defaults to
+        the configuration option `APT::Get::AllowUnauthenticated`.
+
         .. versionadded:: 0.7.10
         """
+        if allow_unauthenticated is None:
+            allow_unauthenticated = apt_pkg.config.find_b("APT::Get::"
+                                        "AllowUnauthenticated", False)
         base = os.path.basename(self._records.filename)
         destfile = os.path.join(destdir, base)
         if _file_is_same(destfile, self.size, self._records.hashes):
@@ -877,7 +885,7 @@ class Version(object):
         pfile, offset = self._cand.file_list[0]
         index = self.package._pcache._list.find_index(pfile)
 
-        if index is None or not index.is_trusted:
+        if not (allow_unauthenticated or (index and index.is_trusted)):
             raise UntrustedError("Could not fetch %s %s source package: "
                                  "Source %r is not trusted" %
                                  (self.package.name, self.version,
@@ -885,7 +893,7 @@ class Version(object):
         if not self.uri:
             raise ValueError("No URI for this binary.")
         hashes = self._records.hashes
-        if not hashes.usable:
+        if not (allow_unauthenticated or hashes.usable):
             raise UntrustedError("The item %r could not be fetched: "
                                      "No trusted hash found." %
                                      destfile)
@@ -900,8 +908,9 @@ class Version(object):
 
         return os.path.abspath(destfile)
 
-    def fetch_source(self, destdir="", progress=None, unpack=True):
-        # type: (str, AcquireProgress, bool) -> str
+    def fetch_source(self, destdir="", progress=None, unpack=True,
+                     allow_unauthenticated=None):
+        # type: (str, Optional[AcquireProgress], bool, Optional[bool]) -> str
         """Get the source code of a package.
 
         The parameter *destdir* specifies the directory where the source will
@@ -916,7 +925,15 @@ class Version(object):
 
         If *unpack* is ``True``, the path to the extracted directory is
         returned. Otherwise, the path to the .dsc file is returned.
+
+        The keyword-only parameter *allow_unauthenticated* specifies whether
+        to allow unauthenticated downloads. If not specified, it defaults to
+        the configuration option `APT::Get::AllowUnauthenticated`.
         """
+        if allow_unauthenticated is None:
+            allow_unauthenticated = apt_pkg.config.find_b("APT::Get::"
+                                        "AllowUnauthenticated", False)
+
         src = apt_pkg.SourceRecords()
         acq = apt_pkg.Acquire(progress or apt.progress.text.AcquireProgress())
 
@@ -932,7 +949,7 @@ class Version(object):
             raise ValueError("No source for %r" % self)
         files = list()
 
-        if not src.index.is_trusted:
+        if not (allow_unauthenticated or src.index.is_trusted):
             raise UntrustedError("Could not fetch %s %s source package: "
                                  "Source %r is not trusted" %
                                  (self.package.name, self.version,
@@ -946,7 +963,7 @@ class Version(object):
                 logging.debug('Ignoring already existing file: %s' % destfile)
                 continue
 
-            if not fil.hashes.usable:
+            if not (allow_unauthenticated or fil.hashes.usable):
                 raise UntrustedError("The item %r could not be fetched: "
                                          "No trusted hash found." %
                                          destfile)
