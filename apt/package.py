@@ -608,7 +608,8 @@ class Version(object):
         except StopIteration:
             return None
 
-    def fetch_binary(self, destdir='', progress=None):
+    def fetch_binary(self, destdir='', progress=None,
+                     allow_unauthenticated=None):
         """Fetch the binary version of the package.
 
         The parameter *destdir* specifies the directory where the package will
@@ -618,8 +619,15 @@ class Version(object):
         object. If not specified or None, apt.progress.text.AcquireProgress()
         is used.
 
+        The keyword-only parameter *allow_unauthenticated* specifies whether
+        to allow unauthenticated downloads. If not specified, it defaults to
+        the configuration option `APT::Get::AllowUnauthenticated`.
+
         .. versionadded:: 0.7.10
         """
+        if allow_unauthenticated is None:
+            allow_unauthenticated = apt_pkg.config.find_b("APT::Get::"
+                                        "AllowUnauthenticated", False)
         base = os.path.basename(self._records.filename)
         destfile = os.path.join(destdir, base)
         hashstring = _get_binary_hash(self._records)
@@ -631,12 +639,15 @@ class Version(object):
         pfile, offset = self._cand.file_list[0]
         index = self.package._pcache._list.find_index(pfile)
 
-        if index is None or not index.is_trusted:
+        if not (allow_unauthenticated or (index and index.is_trusted)):
             raise UntrustedError("Could not fetch %s %s source package: "
                                  "Source %r is not trusted" %
                                  (self.package.name, self.version,
                                   getattr(index, "describe", "<unkown>")))
-
+        if not (allow_unauthenticated or hashstring.hashtype == "SHA256"):
+            raise UntrustedError("The item %r could not be fetched: "
+                                     "No trusted hash found." %
+                                     destfile)
         acq = apt_pkg.Acquire(progress or apt.progress.text.AcquireProgress())
         acqfile = apt_pkg.AcquireFile(acq, self.uri,
                                       hashstring and str(hashstring),
@@ -649,7 +660,8 @@ class Version(object):
 
         return os.path.abspath(destfile)
 
-    def fetch_source(self, destdir="", progress=None, unpack=True):
+    def fetch_source(self, destdir="", progress=None, unpack=True,
+                     allow_unauthenticated=None):
         """Get the source code of a package.
 
         The parameter *destdir* specifies the directory where the source will
@@ -664,7 +676,15 @@ class Version(object):
 
         If *unpack* is ``True``, the path to the extracted directory is
         returned. Otherwise, the path to the .dsc file is returned.
+
+        The keyword-only parameter *allow_unauthenticated* specifies whether
+        to allow unauthenticated downloads. If not specified, it defaults to
+        the configuration option `APT::Get::AllowUnauthenticated`.
         """
+        if allow_unauthenticated is None:
+            allow_unauthenticated = apt_pkg.config.find_b("APT::Get::"
+                                        "AllowUnauthenticated", False)
+
         src = apt_pkg.SourceRecords()
         acq = apt_pkg.Acquire(progress or apt.progress.text.AcquireProgress())
 
@@ -680,7 +700,7 @@ class Version(object):
             raise ValueError("No source for %r" % self)
         files = list()
 
-        if not src.index.is_trusted:
+        if not (allow_unauthenticated or src.index.is_trusted):
             raise UntrustedError("Could not fetch %s %s source package: "
                                  "Source %r is not trusted" %
                                  (self.package.name, self.version,
@@ -693,6 +713,10 @@ class Version(object):
             if _file_is_same(destfile, size, hashstring):
                 print(('Ignoring already existing file: %s' % destfile))
                 continue
+            if not (allow_unauthenticated or hashstring.hashtype == "SHA256"):
+                raise UntrustedError("The item %r could not be fetched: "
+                                         "No trusted hash found." %
+                                         destfile)
             files.append(apt_pkg.AcquireFile(acq, src.index.archive_uri(path),
                          hashstring and str(hashstring),
                          size, base, destfile=destfile))
