@@ -537,6 +537,7 @@ class Version(object):
     def _records(self):
         # type: () -> apt_pkg.PackageRecords
         """Internal helper that moves the Records to the right position."""
+        # If changing lookup, change fetch_binary() as well
         if not self.package._pcache._records.lookup(self._cand.file_list[0]):
             raise LookupError("Could not lookup record")
 
@@ -872,6 +873,15 @@ class Version(object):
             logging.debug('Ignoring already existing file: %s' % destfile)
             return os.path.abspath(destfile)
 
+        # Verify that the index is actually trusted
+        pfile, offset = self._cand.file_list[0]
+        index = self.package._pcache._list.find_index(pfile)
+
+        if index is None or not index.is_trusted:
+            raise UntrustedError("Could not fetch %s %s source package: "
+                                 "Source %r is not trusted" %
+                                 (self.package.name, self.version,
+                                  getattr(index, "describe", "<unkown>")))
         if not self.uri:
             raise ValueError("No URI for this binary.")
         hashes = self._records.hashes
@@ -921,6 +931,12 @@ class Version(object):
         if not source_lookup:
             raise ValueError("No source for %r" % self)
         files = list()
+
+        if not src.index.is_trusted:
+            raise UntrustedError("Could not fetch %s %s source package: "
+                                 "Source %r is not trusted" %
+                                 (self.package.name, self.version,
+                                  src.index.describe))
         for fil in src.files:
             base = os.path.basename(fil.path)
             destfile = os.path.join(destdir, base)
