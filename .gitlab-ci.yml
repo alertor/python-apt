@@ -1,0 +1,31 @@
+image: debian:jessie
+variables:
+  DEBIAN_FRONTEND: noninteractive
+
+pep8:
+  script:
+  - apt update
+  - apt install -q -y pep8
+  - env python tests/test_pep8.py
+
+test:
+  script:
+  - echo "deb-src http://deb.debian.org/debian/ jessie main" >> /etc/apt/sources.list
+  - apt update
+  - apt install -q -y --no-install-recommends gdebi-core
+  - apt-get build-dep -q -y python-apt
+  - dpkg-buildpackage
+  - make -C doc html
+  artifacts:
+    paths:
+    - doc/build/html
+
+pages:
+  stage: deploy
+  script:
+  - mv doc/build/html/ public
+  artifacts:
+    paths:
+    - public
+  only:
+  - master
