@@ -1,15 +1,24 @@
-image: debian:testing
+image: ubuntu:eoan
 variables:
   DEBIAN_FRONTEND: noninteractive
+
+typing:
+  script:
+  - apt update
+  - apt install -q -y python3-pip
+  - python3 -m pip install -U mypy==0.670
+  - env MYPYPATH=$PWD/typehinting/ mypy ./apt
+
+pep8:
+  script:
+  - apt update
+  - apt install -q -y pep8
+  - env python3 tests/testmanual_pep8.py
 
 test:
   script:
   - apt update
-  - apt install -q -y python3-pip
   - apt build-dep -q -y ./
-  - python3 -m pip install -U mypy
-  - env python3 tests/testmanual_pep8.py
-  - env MYPYPATH=$PWD/typehinting/ mypy ./apt
   - dpkg-buildpackage
   - make -C doc html
   artifacts:
