@@ -1,0 +1,29 @@
+image: ubuntu:xenial
+variables:
+  DEBIAN_FRONTEND: noninteractive
+
+pep8:
+  script:
+  - apt update
+  - apt install -q -y pep8
+  - env python3 tests/test_pep8.py
+
+test:
+  script:
+  - apt update
+  - apt build-dep -q -y ./
+  - dpkg-buildpackage
+  - make -C doc html
+  artifacts:
+    paths:
+    - doc/build/html
+
+pages:
+  stage: deploy
+  script:
+  - mv doc/build/html/ public
+  artifacts:
+    paths:
+    - public
+  only:
+  - master
