@@ -1,0 +1,23 @@
+image: debian:stretch
+variables:
+  DEBIAN_FRONTEND: noninteractive
+
+test:
+  script:
+  - apt update
+  - apt build-dep -q -y ./
+  - dpkg-buildpackage
+  - make -C doc html
+  artifacts:
+    paths:
+    - doc/build/html
+
+pages:
+  stage: deploy
+  script:
+  - mv doc/build/html/ public
+  artifacts:
+    paths:
+    - public
+  only:
+  - master
