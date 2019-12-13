@@ -1,3 +1,25 @@
+python-apt (0.9.3.13) jessie-security; urgency=high
+
+  * SECURITY UPDATE: Check that repository is trusted before downloading
+    files from it (LP: #1858973)
+    - apt/cache.py: Add checks to fetch_archives() and commit()
+    - apt/package.py: Add checks to fetch_binary() and fetch_source()
+    - CVE-2019-15796
+  * SECURITY UPDATE: Do not use MD5 for verifying downloadeds
+    (Closes: #944696) (#LP: #1858972)
+    - apt/package.py: Use strongest hashes when fetching packages. Packages
+      without a trusted hash are still accepted.
+    - CVE-2019-15795
+  * To work around the new checks, the parameter allow_unauthenticated=True
+    can be passed to the functions. It defaults to the value of the
+    APT::Get::AllowUnauthenticated option.
+  * Automatic changes and fixes for external regressions:
+    - Adjustments to test suite and CI to fix CI regressions
+    - Automatic mirror list update
+    - utils/get_debian_mirrors.py: Get data from salsa 
+
+ -- Julian Andres Klode <jak@debian.org>  Thu, 23 Jan 2020 11:53:03 +0100
+
 python-apt (0.9.3.12) jessie; urgency=medium
 
   [ Julian Andres Klode ]
