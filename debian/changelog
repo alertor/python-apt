@@ -1,3 +1,28 @@
+python-apt (1.4.1) stretch-security; urgency=high
+
+  * SECURITY UPDATE: Check that repository is trusted before downloading
+    files from it (LP: #1858973)
+    - apt/cache.py: Add checks to fetch_archives() and commit()
+    - apt/package.py: Add checks to fetch_binary() and fetch_source()
+    - CVE-2019-15796
+  * SECURITY UPDATE: Do not use MD5 for verifying downloadeds
+    (Closes: #944696) (#LP: #1858972)
+    - apt/package.py: Use all hashes when fetching packages, and
+      check that we have trusted hashes when downloading
+    - CVE-2019-15795
+  * To work around the new checks, the parameter allow_unauthenticated=True
+    can be passed to the functions. It defaults to the value of the
+    APT::Get::AllowUnauthenticated option.
+  * Cherry-pick "add pkgsrcrecord.Files.{hashes,size,path,type} getters" to
+    enable apt_pkg.SourceRecords to return objects with such getters instead
+    of just tuples (providing tuple-style backward compatibility).
+  * Automatic changes and fixes for external regressions:
+    - Adjustments to test suite and CI to fix CI regressions
+    - testcommon: Avoid reading host apt.conf files
+    - Automatic mirror list update
+
+ -- Julian Andres Klode <jak@debian.org>  Thu, 23 Jan 2020 11:32:18 +0100
+
 python-apt (1.4.0~beta3) unstable; urgency=medium
 
   * apt.auth: Fix check of fingerprint length
