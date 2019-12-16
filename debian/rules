@@ -12,6 +12,12 @@ export PATH := $(CURDIR)/utils:$(PATH)
 export pyversions := $(CURDIR)/utils/pyversions
 export DEB_BUILD_MAINT_OPTIONS=hardening=+all,-pie
 
+# Workaround bug in gcc -flto on Ubuntu disco.
+ifeq (yes,$(shell dpkg-vendor --derives-from Ubuntu && echo yes))
+DEB_CFLAGS_MAINT_APPEND+=-fno-lto
+endif
+
+
 %:
 	dh $@ --with python2,python3,sphinxdoc
 
