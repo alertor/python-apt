@@ -64,6 +64,11 @@ class TestSignedUsable(testcommon.TestCase):
         self.progress = apt.progress.text.AcquireProgress
         apt.progress.text.AcquireProgress = apt.progress.base.AcquireProgress
 
+        # Disable actual installation of downloaded items
+        self.cache.install_archives = (
+            lambda *a, **b: apt_pkg.PackageManager.RESULT_COMPLETED
+        )
+
     def tearDown(self):
         # this resets the rootdir apt_pkg.config to ensure it does not
         # "pollute" the later tests
@@ -73,11 +78,62 @@ class TestSignedUsable(testcommon.TestCase):
 
         apt.progress.text.AcquireProgress = self.progress
 
+    def doInstall(self, name, bargs):
+        install_progress = apt.progress.base.InstallProgress()
+        self.cache[name].mark_install()
+        try:
+            self.cache.commit(install_progress=install_progress, **bargs)
+        finally:
+            # Workaround install progress leaking files
+            install_progress.write_stream.close()
+            install_progress.status_stream.close()
+            for fname in os.listdir(
+                os.path.join(self.chroot_path, "var/cache/apt/archives")
+            ):
+                if os.path.isfile(
+                    os.path.join(
+                        self.chroot_path, "var/cache/apt/archives", fname
+                    )
+                ):
+                    os.unlink(
+                        os.path.join(
+                            self.chroot_path, "var/cache/apt/archives", fname
+                        )
+                    )
+            self.cache[name].mark_keep()
+
+    def doFetchArchives(self, name, bargs):
+        fetcher = apt_pkg.Acquire()
+        self.cache[name].mark_install()
+        try:
+            self.cache.fetch_archives(fetcher=fetcher, **bargs)
+        finally:
+            for fname in os.listdir(
+                os.path.join(self.chroot_path, "var/cache/apt/archives")
+            ):
+                if fname.endswith(".deb"):
+                    os.unlink(
+                        os.path.join(
+                            self.chroot_path, "var/cache/apt/archives", fname
+                        )
+                    )
+            self.cache[name].mark_keep()
+
     def testDefaultDenyButExplicitAllowUnauthenticated(self):
         """Deny by config (default), but pass allow_unauthenticated=True"""
 
         bargs = dict(allow_unauthenticated=True)
         sargs = dict(allow_unauthenticated=True, unpack=False)
+
+        self.doInstall("signed-usable", bargs)
+        self.doInstall("signed-not-usable", bargs)
+        self.doInstall("unsigned-usable", bargs)
+        self.doInstall("unsigned-unusable", bargs)
+
+        self.doFetchArchives("signed-usable", bargs)
+        self.doFetchArchives("signed-not-usable", bargs)
+        self.doFetchArchives("unsigned-usable", bargs)
+        self.doFetchArchives("unsigned-unusable", bargs)
 
         self.cache["signed-usable"].candidate.fetch_binary(**bargs)
         self.cache["signed-usable"].candidate.fetch_source(**sargs)
@@ -95,6 +151,16 @@ class TestSignedUsable(testcommon.TestCase):
         bargs = dict()
         sargs = dict(unpack=False)
 
+        self.doInstall("signed-usable", bargs)
+        self.doInstall("signed-not-usable", bargs)
+        self.doInstall("unsigned-usable", bargs)
+        self.doInstall("unsigned-unusable", bargs)
+
+        self.doFetchArchives("signed-usable", bargs)
+        self.doFetchArchives("signed-not-usable", bargs)
+        self.doFetchArchives("unsigned-usable", bargs)
+        self.doFetchArchives("unsigned-unusable", bargs)
+
         self.cache["signed-usable"].candidate.fetch_binary(**bargs)
         self.cache["signed-usable"].candidate.fetch_source(**sargs)
         self.cache["signed-not-usable"].candidate.fetch_binary(**bargs)
@@ -106,6 +172,40 @@ class TestSignedUsable(testcommon.TestCase):
 
     def testDefaultDeny(self):
         """Test APT::Get::AllowUnauthenticated = False (default)"""
+        self.doInstall("signed-usable", {})
+        self.doInstall("signed-not-usable", {})
+        self.assertRaisesRegex(
+            apt.cache.UntrustedException,
+            "Untrusted packages:",
+            self.doInstall,
+            "unsigned-usable",
+            {},
+        )
+        self.assertRaisesRegex(
+            apt.cache.UntrustedException,
+            "Untrusted packages:",
+            self.doInstall,
+            "unsigned-unusable",
+            {},
+        )
+
+        self.doFetchArchives("signed-usable", {})
+        self.doFetchArchives("signed-not-usable", {})
+        self.assertRaisesRegex(
+            apt.cache.UntrustedException,
+            "Untrusted packages:",
+            self.doFetchArchives,
+            "unsigned-usable",
+            {},
+        )
+        self.assertRaisesRegex(
+            apt.cache.UntrustedException,
+            "Untrusted packages:",
+            self.doFetchArchives,
+            "unsigned-unusable",
+            {},
+        )
+
         self.cache["signed-usable"].candidate.fetch_binary()
         self.cache["signed-usable"].candidate.fetch_source(unpack=False)
         self.assertRaisesRegex(
@@ -148,6 +248,41 @@ class TestSignedUsable(testcommon.TestCase):
 
         bargs = dict(allow_unauthenticated=False)
         sargs = dict(allow_unauthenticated=False, unpack=False)
+
+        self.doInstall("signed-usable", bargs)
+        self.doInstall("signed-not-usable", bargs)
+
+        self.assertRaisesRegex(
+            apt.cache.UntrustedException,
+            "Untrusted packages:",
+            self.doInstall,
+            "unsigned-usable",
+            bargs,
+        )
+        self.assertRaisesRegex(
+            apt.cache.UntrustedException,
+            "Untrusted packages:",
+            self.doInstall,
+            "unsigned-unusable",
+            bargs,
+        )
+
+        self.doFetchArchives("signed-usable", bargs)
+        self.doFetchArchives("signed-not-usable", bargs)
+        self.assertRaisesRegex(
+            apt.cache.UntrustedException,
+            "Untrusted packages:",
+            self.doFetchArchives,
+            "unsigned-usable",
+            bargs,
+        )
+        self.assertRaisesRegex(
+            apt.cache.UntrustedException,
+            "Untrusted packages:",
+            self.doFetchArchives,
+            "unsigned-unusable",
+            bargs,
+        )
 
         self.cache["signed-usable"].candidate.fetch_binary(**bargs)
         self.cache["signed-usable"].candidate.fetch_source(**sargs)
