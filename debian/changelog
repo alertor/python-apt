@@ -1,4 +1,4 @@
-python-apt (1.6.5) bionic-security; urgency=medium
+python-apt (1.6.5ubuntu0.1) bionic-security; urgency=medium
 
   * SECURITY UPDATE: Check that repository is trusted before downloading
     files from it (LP: #1858973)
