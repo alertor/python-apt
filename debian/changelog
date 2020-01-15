@@ -1,4 +1,4 @@
-python-apt (1.1.0~beta1ubuntu0.16.04.6) xenial-security; urgency=medium
+python-apt (1.1.0~beta1ubuntu0.16.04.7) xenial-security; urgency=medium
 
   * SECURITY UPDATE: Check that repository is trusted before downloading
     files from it (LP: #1858973)
