@@ -1,4 +1,4 @@
-python-apt (1.9.0ubuntu1.1) eoan-security; urgency=medium
+python-apt (1.9.0ubuntu1.2) eoan-security; urgency=medium
 
   * SECURITY UPDATE: Check that repository is trusted before downloading
     files from it (LP: #1858973)
