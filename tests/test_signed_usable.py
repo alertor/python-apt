@@ -208,17 +208,9 @@ class TestSignedUsable(testcommon.TestCase):
 
         self.cache["signed-usable"].candidate.fetch_binary()
         self.cache["signed-usable"].candidate.fetch_source(unpack=False)
-        self.assertRaisesRegex(
-            apt.package.UntrustedError,
-            ": No trusted hash",
-            self.cache["signed-not-usable"].candidate.fetch_binary,
-        )
-        self.assertRaisesRegex(
-            apt.package.UntrustedError,
-            ": No trusted hash",
-            self.cache["signed-not-usable"].candidate.fetch_source,
-            unpack=False,
-        )
+        self.cache["signed-not-usable"].candidate.fetch_binary()
+        self.cache["signed-not-usable"].candidate.fetch_source(unpack=False)
+
         self.assertRaisesRegex(
             apt.package.UntrustedError,
             ": Source",
@@ -286,18 +278,9 @@ class TestSignedUsable(testcommon.TestCase):
 
         self.cache["signed-usable"].candidate.fetch_binary(**bargs)
         self.cache["signed-usable"].candidate.fetch_source(**sargs)
-        self.assertRaisesRegex(
-            apt.package.UntrustedError,
-            ": No trusted hash",
-            self.cache["signed-not-usable"].candidate.fetch_binary,
-            **bargs
-        )
-        self.assertRaisesRegex(
-            apt.package.UntrustedError,
-            ": No trusted hash",
-            self.cache["signed-not-usable"].candidate.fetch_source,
-            **sargs
-        )
+        self.cache["signed-not-usable"].candidate.fetch_binary(**bargs)
+        self.cache["signed-not-usable"].candidate.fetch_source(**sargs)
+
         self.assertRaisesRegex(
             apt.package.UntrustedError,
             ": Source",

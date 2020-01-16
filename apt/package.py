@@ -644,10 +644,6 @@ class Version(object):
                                  "Source %r is not trusted" %
                                  (self.package.name, self.version,
                                   getattr(index, "describe", "<unkown>")))
-        if not (allow_unauthenticated or hashstring.hashtype == "SHA256"):
-            raise UntrustedError("The item %r could not be fetched: "
-                                     "No trusted hash found." %
-                                     destfile)
         acq = apt_pkg.Acquire(progress or apt.progress.text.AcquireProgress())
         acqfile = apt_pkg.AcquireFile(acq, self.uri,
                                       hashstring and str(hashstring),
@@ -713,10 +709,6 @@ class Version(object):
             if _file_is_same(destfile, size, hashstring):
                 print(('Ignoring already existing file: %s' % destfile))
                 continue
-            if not (allow_unauthenticated or hashstring.hashtype == "SHA256"):
-                raise UntrustedError("The item %r could not be fetched: "
-                                         "No trusted hash found." %
-                                         destfile)
             files.append(apt_pkg.AcquireFile(acq, src.index.archive_uri(path),
                          hashstring and str(hashstring),
                          size, base, destfile=destfile))
