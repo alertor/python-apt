@@ -1,3 +1,27 @@
+python-apt (1.8.5) unstable; urgency=high
+
+  * SECURITY UPDATE: Check that repository is trusted before downloading
+    files from it (LP: #1858973)
+    - apt/cache.py: Add checks to fetch_archives() and commit()
+    - apt/package.py: Add checks to fetch_binary() and fetch_source()
+    - CVE-2019-15796
+  * SECURITY UPDATE: Do not use MD5 for verifying downloadeds
+    (Closes: #944696) (#LP: #1858972)
+    - apt/package.py: Use all hashes when fetching packages, and
+      check that we have trusted hashes when downloading
+    - CVE-2019-15795
+  * To work around the new checks, the parameter allow_unauthenticated=True
+    can be passed to the functions. It defaults to the value of the
+    APT::Get::AllowUnauthenticated option.
+    - Bump Breaks aptdaemon (<< 1.1.1+bzr982-0ubuntu21.2), as it will have
+      to set that parameter after having done validation.
+  * Automatic changes and fixes for external regressions:
+    - Adjustments to test suite and CI to fix CI regressions
+    - Automatic mirror list update
+    - d/tests/control: Add "Restrictions: allow-stderr" (Closes: #947794)
+
+ -- Julian Andres Klode <jak@debian.org>  Wed, 15 Jan 2020 16:46:29 +0100
+
 python-apt (1.8.4) unstable; urgency=medium
 
   * apt.Cache: Fix (un)locking in various places
