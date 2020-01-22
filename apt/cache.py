@@ -453,7 +453,7 @@ class Cache(object):
     def _fetch_archives(self,
                         fetcher,                # type: apt_pkg.Acquire
                         pm,                     # type: apt_pkg.PackageManager
-                        allow_unauthenticated,  # type: Optional[bool]
+                        allow_unauthenticated=None,  # type: Optional[bool]
                         ):
         # type: (...) -> int
         """ fetch the needed archives """
