@@ -1,3 +1,11 @@
+python-apt (1.9.0ubuntu1.3) eoan-security; urgency=medium
+
+  * SECURITY REGRESSION: crash with ubuntu-release-upgrader (LP: #1860606)
+    - apt/cache.py: make allow_unauthenticated argument to
+      fetch_archives() optional.
+
+ -- Marc Deslauriers <marc.deslauriers@ubuntu.com>  Wed, 22 Jan 2020 16:47:49 -0500
+
 python-apt (1.9.0ubuntu1.2) eoan-security; urgency=medium
 
   * SECURITY UPDATE: Check that repository is trusted before downloading
