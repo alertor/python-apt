@@ -399,7 +399,7 @@ class Cache(object):
             raise FetchFailedException(err_msg)
         return res
 
-    def _fetch_archives(self, fetcher, pm, allow_unauthenticated):
+    def _fetch_archives(self, fetcher, pm, allow_unauthenticated=None):
         """ fetch the needed archives """
         if self._records is None:
             raise CacheClosedException(

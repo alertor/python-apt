@@ -1,3 +1,11 @@
+python-apt (1.1.0~beta1ubuntu0.16.04.8) xenial-security; urgency=medium
+
+  * SECURITY REGRESSION: crash with ubuntu-release-upgrader (LP: #1860606)
+    - apt/cache.py: make allow_unauthenticated argument to
+      fetch_archives() optional.
+
+ -- Marc Deslauriers <marc.deslauriers@ubuntu.com>  Wed, 22 Jan 2020 16:53:47 -0500
+
 python-apt (1.1.0~beta1ubuntu0.16.04.7) xenial-security; urgency=medium
 
   * SECURITY UPDATE: Check that repository is trusted before downloading
