@@ -1,16 +1,4 @@
-python-apt (1.8.6) unstable; urgency=medium
-
-  [ Julian Andres Klode ]
-  * testcommon: Avoid reading host apt.conf files
-
-  [ Marc Deslauriers ]
-  * SECURITY REGRESSION: crash with ubuntu-release-upgrader (LP: #1860606)
-    - apt/cache.py: make allow_unauthenticated argument to
-      fetch_archives() optional.
-
- -- Julian Andres Klode <jak@debian.org>  Thu, 23 Jan 2020 11:04:02 +0100
-
-python-apt (1.8.5) unstable; urgency=high
+python-apt (1.8.4.1) buster-security; urgency=high
 
   * SECURITY UPDATE: Check that repository is trusted before downloading
     files from it (LP: #1858973)
@@ -25,14 +13,12 @@ python-apt (1.8.5) unstable; urgency=high
   * To work around the new checks, the parameter allow_unauthenticated=True
     can be passed to the functions. It defaults to the value of the
     APT::Get::AllowUnauthenticated option.
-    - Bump Breaks aptdaemon (<< 1.1.1+bzr982-0ubuntu21.2), as it will have
-      to set that parameter after having done validation.
   * Automatic changes and fixes for external regressions:
     - Adjustments to test suite and CI to fix CI regressions
+    - testcommon: Avoid reading host apt.conf files
     - Automatic mirror list update
-    - d/tests/control: Add "Restrictions: allow-stderr" (Closes: #947794)
 
- -- Julian Andres Klode <jak@debian.org>  Wed, 15 Jan 2020 16:46:29 +0100
+ -- Julian Andres Klode <jak@debian.org>  Thu, 23 Jan 2020 11:10:21 +0100
 
 python-apt (1.8.4) unstable; urgency=medium
 
