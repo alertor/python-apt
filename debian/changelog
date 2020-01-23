@@ -1,3 +1,15 @@
+python-apt (1.8.6) unstable; urgency=medium
+
+  [ Julian Andres Klode ]
+  * testcommon: Avoid reading host apt.conf files
+
+  [ Marc Deslauriers ]
+  * SECURITY REGRESSION: crash with ubuntu-release-upgrader (LP: #1860606)
+    - apt/cache.py: make allow_unauthenticated argument to
+      fetch_archives() optional.
+
+ -- Julian Andres Klode <jak@debian.org>  Thu, 23 Jan 2020 11:04:02 +0100
+
 python-apt (1.8.5) unstable; urgency=high
 
   * SECURITY UPDATE: Check that repository is trusted before downloading
