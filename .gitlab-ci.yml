@@ -25,14 +25,6 @@ test:
     paths:
     - doc/build/html
 
-test on bullseye:
-  script:
-  - apt update
-  - apt build-dep -q -y ./
-  - dpkg-buildpackage
-  - make -C doc html
-  image: debian:bullseye
-
 pages:
   stage: deploy
   script:
