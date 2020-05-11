@@ -1,3 +1,9 @@
+python-apt (1.9.0ubuntu1.4) eoan; urgency=medium
+
+  * Don't duplicate disabled sources during add() (LP: #1311056)
+
+ -- Dave Jones <dave.jones@canonical.com>  Fri, 24 Jan 2020 22:08:17 +0000
+
 python-apt (1.9.0ubuntu1.3) eoan-security; urgency=medium
 
   * SECURITY REGRESSION: crash with ubuntu-release-upgrader (LP: #1860606)
